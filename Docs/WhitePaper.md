@@ -84,6 +84,7 @@ Build tbl_Temp_sorting_grouping
 ASCII Diagram
 Code
 Group A
+```
  ├── Header
  ├── Detail Rows
  ├── Subgroup A1
@@ -91,7 +92,7 @@ Group A
  │     ├── Detail Rows
  │     └── Footer
  └── Footer
-
+```
 
 6. Row Insertion (fn_break)
 The break table contains Insert_1 values that determine where rows should be inserted in Excel.
