@@ -33,7 +33,6 @@ separation of data retrieval and visualization
 🧩 Architecture summary
 1. Report Manager (frmReportManager)
 This form is a static preview of a reporting UI. It displays:
-
 A locked date range (non‑interactive)
 A grid of pre‑loaded sample data
 A Get Data button that shows the instructional message:
