@@ -1,0 +1,253 @@
+Attribute VB_Name = "modOpenFile"
+Option Compare Database
+Option Explicit
+
+' Declarations for Windows Common Dialogs procedures
+ Type TSBAPI_OPENFILE
+  strFilter As String             ' Filter string
+  intFilterIndex As Long          ' Initial Filter to display.
+  strInitialDir As String         ' Initial directory for the dialog to open in.
+  strInitialFile As String        ' Initial file name to populate the dialog with.
+  strDialogTitle As String        ' Dialog title
+  strDefaultExtension As String   ' Default extension to append to file if user didn't specify one.
+  lngFlags As Long                ' Flags (see constant list) to be used.
+  strFullPathReturned As String   ' Full path of file picked.
+  strFileNameReturned As String   ' File name of file picked.
+  intFileOffset As Integer        ' Offset in full path (strFullPathReturned) where the file name (strFileNameReturned) begins.
+  intFileExtension As Integer     ' Offset in full path (strFullPathReturned) where the file extension begins.
+End Type
+
+Const ALLFILES = "All Files"
+
+ Type TSBAPI_WINOPENFILENAME
+    lStructSize As Long
+    hWndOwner As Long
+    hInstance As Long
+    lpstrFilter As String
+    lpstrCustomFilter As String
+    nMaxCustrFilter As Long
+    nFilterIndex As Long
+    lpstrFile As String
+    nMaxFile As Long
+    lpstrFileTitle As String
+    nMaxFileTitle As Long
+    lpstrInitialDir As String
+    lpstrTitle As String
+    flags As Long
+    nFileOffset As Integer
+    nFileExtension As Integer
+    lpstrDefExt As String
+    lCustrData As Long
+    lpfnHook As Long
+    lpTemplateName As String
+End Type
+
+Const OFN_ALLOWMULTISELECT = &H200
+Const OFN_CREATEPROMPT = &H2000
+Const OFN_EXPLORER = &H80000
+Const OFN_FILEMUSTEXIST = &H1000
+Const OFN_HIDEREADONLY = &H4
+Const OFN_NOCHANGEDIR = &H8
+Const OFN_NODEREFERENCELINKS = &H100000
+Const OFN_NONETWORKBUTTON = &H20000
+Const OFN_NOREADONLYRETURN = &H8000
+Const OFN_NOVALIDATE = &H100
+Const OFN_OVERWRITEPROMPT = &H2
+Const OFN_PATHMUSTEXIST = &H800
+Const OFN_READONLY = &H1
+Const OFN_SHOWHELP = &H10
+
+Declare Function TSBAPI_GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" _
+  (pOpenfilename As TSBAPI_WINOPENFILENAME) _
+As Boolean
+  
+Declare Function TSBAPI_GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" _
+  (pOpenfilename As TSBAPI_WINOPENFILENAME) _
+As Boolean
+  
+Declare Sub TSBAPI_ChooseColor Lib "msaccess.exe" Alias "#53" _
+  (ByVal hWnd As Long, rgb As Long)
+
+Function GetOpenFileEX_TSB(typOpenFile As TSBAPI_OPENFILE) As String
+  ' Comments  : Extended file open routine
+  ' Parameters: typOpenFile - record of type TSBAPI_OPENFILE.
+  ' Returns   : Path, name and extension of the file selected
+  '
+  Dim fok As Boolean
+  Dim typWinOpen As TSBAPI_WINOPENFILENAME
+  
+  On Error GoTo PROC_ERR
+  
+  ' Convert the TSBAPI structure to a Win structure
+  ConvertTSB2Win typOpenFile, typWinOpen
+     
+  ' Call the Common Dialog
+  fok = TSBAPI_GetOpenFileName(typWinOpen)
+  
+  ' Convert the Win structure back to a TSBAPI structure
+  ConvertWin2TSB typWinOpen, typOpenFile
+  
+  ' Return the path and file name.
+  GetOpenFileEX_TSB = typOpenFile.strFileNameReturned
+    
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  GetOpenFileEX_TSB = ""
+  Resume PROC_EXIT
+  
+End Function
+
+Sub ConvertTSB2Win(TSB_Struct As TSBAPI_OPENFILE, Win_Struct As TSBAPI_WINOPENFILENAME)
+  ' Comments  : Converts the passed TSBAPI structure to a Windows structure
+  ' Parameters: TSB_Struct - record of type TSBAPI_OPENFILE
+  '             Win_Struct - record of type TSBAPI_WINOPENFILENAME
+  ' Returns   : Nothing
+  '
+  Dim strFile As String * 512
+
+  On Error GoTo PROC_ERR
+  
+  Win_Struct.hWndOwner = Application.hWndAccessApp
+  Win_Struct.hInstance = 0
+
+  If TSB_Struct.strFilter = "" Then
+    Win_Struct.lpstrFilter = ALLFILES & Chr$(0) & "*.*" & Chr$(0)
+  Else
+    Win_Struct.lpstrFilter = TSB_Struct.strFilter
+  End If
+  Win_Struct.nFilterIndex = TSB_Struct.intFilterIndex
+
+  Win_Struct.lpstrFile = String(512, 0)
+  Win_Struct.nMaxFile = 511
+  
+  Win_Struct.lpstrFileTitle = String$(512, 0)
+  Win_Struct.nMaxFileTitle = 511
+
+  Win_Struct.lpstrTitle = TSB_Struct.strDialogTitle
+  Win_Struct.lpstrInitialDir = TSB_Struct.strInitialDir
+  Win_Struct.lpstrDefExt = TSB_Struct.strDefaultExtension
+
+  Win_Struct.flags = TSB_Struct.lngFlags
+
+  Win_Struct.lStructSize = Len(Win_Struct)
+  
+PROC_EXIT:
+  Exit Sub
+  
+PROC_ERR:
+  Resume PROC_EXIT
+   
+End Sub
+
+Sub ConvertWin2TSB(Win_Struct As TSBAPI_WINOPENFILENAME, TSB_Struct As TSBAPI_OPENFILE)
+  ' Comments  : Converts the passed TSBAPI structure to a Windows structure
+  ' Parameters: Win_Struct - record of type TSBAPI_WINOPENFILENAME
+  '             TSB_Struct - record of type TSBAPI_OPENFILE
+  ' Returns   : Nothing
+  '
+  On Error GoTo PROC_ERR
+      
+  TSB_Struct.strFullPathReturned = Left(Win_Struct.lpstrFile, InStr(Win_Struct.lpstrFile, vbNullChar) - 1)
+  TSB_Struct.strFileNameReturned = RemoveNulls_TSB(Win_Struct.lpstrFileTitle)
+  TSB_Struct.intFileOffset = Win_Struct.nFileOffset
+  TSB_Struct.intFileExtension = Win_Struct.nFileExtension
+  
+PROC_EXIT:
+  Exit Sub
+  
+PROC_ERR:
+  Resume PROC_EXIT
+  
+End Sub
+
+Function RemoveNulls_TSB(strIn As String) As String
+  ' Comments  : Removes terminator from a string
+  ' Parameters: strIn - string to modify
+  ' Return    : modified string
+  '
+  Dim intChr As Integer
+
+  intChr = InStr(strIn, Chr$(0))
+
+  If intChr > 0 Then
+    RemoveNulls_TSB = Left$(strIn, intChr - 1)
+  Else
+    RemoveNulls_TSB = strIn
+  End If
+
+End Function
+
+Function CreateFilterString_TSB(ParamArray varFilt() As Variant) As String
+  ' Comments  : Builds a Windows formatted filter string for "file type"
+  ' Parameters: varFilter - parameter array in the format:
+  '                          Text, Filter, Text, Filter ...
+  '                         Such as:
+  '                          "All Files (*.*)", "*.*", "Text Files (*.TXT)", "*.TXT"
+  ' Returns   : windows formatted filter string
+  '
+  Dim strFilter As String
+  Dim intCounter As Integer
+  Dim intParamCount As Integer
+
+  On Error GoTo PROC_ERR
+  
+  ' Get the count of paramaters passed to the function
+  intParamCount = UBound(varFilt)
+  
+  If (intParamCount <> -1) Then
+    
+    ' Count through each parameter
+    For intCounter = 0 To intParamCount
+      strFilter = strFilter & varFilt(intCounter) & Chr$(0)
+    Next
+    
+    ' Check for an even number of parameters
+    If (intParamCount Mod 2) = 0 Then
+      strFilter = strFilter & "*.*" & Chr$(0)
+    End If
+    
+  End If
+
+  CreateFilterString_TSB = strFilter
+  
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  CreateFilterString_TSB = ""
+  Resume PROC_EXIT
+  
+End Function
+
+Function GetSaveFileEX_TSB(typOpenFile As TSBAPI_OPENFILE) As String
+  ' Comments  : Extended file save routine
+  ' Parameters: typOpenFile - record of type TSBAPI_OPENFILE.
+  ' Returns   : Path, name and extension of the file selected
+  '
+  Dim fok As Boolean
+  Dim typWinOpen As TSBAPI_WINOPENFILENAME
+  
+  On Error GoTo PROC_ERR
+  
+  ' Convert the TSBAPI structure to a Win structure
+  ConvertTSB2Win typOpenFile, typWinOpen
+     
+  ' Call the Common Dialog
+  fok = TSBAPI_GetSaveFileName(typWinOpen)
+  
+  ' Convert the Win structure back to a TSBAPI structure
+  ConvertWin2TSB typWinOpen, typOpenFile
+  
+  ' Return the path and file name.
+  GetSaveFileEX_TSB = typOpenFile.strFileNameReturned
+    
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  GetSaveFileEX_TSB = ""
+  Resume PROC_EXIT
+
+End Function

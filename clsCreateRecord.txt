@@ -1,0 +1,170 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "clsCreateRecord"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Public objXLSheet As Object
+
+Private sString As String 'string that contains sql statement
+Private qName As String  'name of query to create
+Private tTable As String    'temporary table name if needed
+Private pPath As String     'path to xl data if needed
+Private qExecute As Boolean  'execute query yes or no
+Private prpRec As Long      'number of records
+
+Public Property Let prpSqlString(ByVal vdata As String)
+    sString = vdata
+End Property
+Public Property Get prpSqlString() As String
+    prpSqlString = sString
+End Property
+Public Property Let prpName(ByVal vdata As String)
+    qName = vdata
+End Property
+Public Property Get prpName() As String
+    prpName = qName
+End Property
+Public Property Let prpTable(ByVal vdata As String)
+    tTable = vdata
+End Property
+Public Property Get prpTable() As String
+    prpTable = tTable
+End Property
+Public Property Let prpPath(ByVal vdata As String)
+    pPath = vdata
+End Property
+Public Property Get prpPath() As String
+    prpPath = pPath
+End Property
+
+Public Property Let prpExecute(ByVal vdata As Boolean)
+    qExecute = vdata
+End Property
+Public Property Get prpExecute() As Boolean
+    prpExecute = qExecute
+End Property
+Public Property Get prpRecords() As Long
+    prpRecords = prpRec
+End Property
+
+Public Property Let prpRecords(ByVal vdata As Long)
+    prpRec = vdata
+End Property
+
+Public Function CreateQuery() As Boolean
+
+Dim bRes As Boolean
+Dim sErr As String
+Dim db As Database
+Dim qdf As QueryDef
+Dim bExists As Boolean
+Dim fok As Boolean
+Dim rOk As Boolean
+
+
+'Set db = DBEngine(0)(0) 'use the db engine - faster than ado for shure.
+Set db = CurrentDb()
+db.QueryDefs.Refresh
+
+
+On Error GoTo err_f:
+
+Select Case prpExecute
+
+Case True
+
+If prpSqlString <> "" And prpName <> "" Then
+            bExists = TableOrQueryExists_TSB("", prpName)
+                
+                If bExists = True Then
+                        db.QueryDefs.Delete prpName
+                        Set qdf = db.CreateQueryDef(prpName, prpSqlString)
+                        qdf.Execute dbFailOnError
+                        'qdf.Execute dbSeeChanges
+
+                         prpRecords = qdf.RecordsAffected
+
+                        CreateQuery = True
+                                                                 
+                ElseIf bExists = False Then
+               
+                        Set qdf = db.CreateQueryDef(prpName, prpSqlString)
+                        qdf.Execute dbFailOnError
+                     '  qdf.Execute dbSeeChanges
+                           
+                           prpRecords = qdf.RecordsAffected
+                        
+                        CreateQuery = True
+        
+                End If
+
+            Else
+            
+            Err.Raise 2500, , "Contact developer"
+            GoTo Leave:
+
+End If
+
+
+Case False
+
+If prpSqlString <> "" And prpName <> "" Then
+            bExists = TableOrQueryExists_TSB("", prpName)
+                
+                If bExists = True Then
+                        db.QueryDefs.Delete prpName
+                                                   
+                        Set qdf = db.CreateQueryDef(prpName, prpSqlString)
+                        qdf.ODBCTimeout = 1200
+                        
+            
+                        CreateQuery = True
+                                                                 
+                ElseIf bExists = False Then
+               
+                        Set qdf = db.CreateQueryDef(prpName, prpSqlString)
+                        qdf.ODBCTimeout = 1200
+                        
+                        CreateQuery = True
+        
+                End If
+       
+            Else
+            
+            Err.Raise 2500, , "Contact developer"
+            GoTo Leave:
+
+End If
+
+End Select
+
+
+theEnd:
+    CreateQuery = True
+      Exit Function
+
+
+Leave:
+    CreateQuery = False
+      Exit Function
+err_f:
+    CreateQuery = False
+    bRes = False
+    sErr = "Could not create query or table"
+
+   If bRes = False Then
+        Err.Raise vbObjectError + 513, "clsCreateRecord:createquery", sErr
+        MsgBox Err.Number & " " & Err.Description
+        
+    End If
+
+
+End Function
+

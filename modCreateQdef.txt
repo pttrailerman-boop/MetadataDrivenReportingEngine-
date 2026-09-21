@@ -1,0 +1,90 @@
+Attribute VB_Name = "modCreateQdef"
+Option Compare Database
+Option Explicit
+
+Function ODBCDCreateStoredProc(strDSN As String, strSQL As String, strQdfName As String, rtnRecords As Boolean) As Boolean
+  Dim fok As Boolean
+  Dim db As Database
+  Dim qdf As QueryDef
+  
+  On Error GoTo PROC_ERR
+  Set db = DBEngine(0)(0)
+    
+    fok = TableOrQueryExists_TSB("", strQdfName)
+    If fok = True Then
+    DoCmd.DeleteObject acQuery, strQdfName
+   End If
+    
+     
+  ' Create the querydef and assign its properties
+  Set qdf = db.CreateQueryDef(strQdfName)
+  With qdf
+        .Connect = strDSN
+        .SQL = strSQL
+        .ODBCTimeout = 1200
+        .ReturnsRecords = rtnRecords
+  End With
+  
+  
+ '
+  ODBCDCreateStoredProc = True
+  
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  ODBCDCreateStoredProc = False
+  Resume PROC_EXIT
+  
+End Function
+
+Function TableOrQueryExists_TSB(strDatabase As String, strName As String) As Boolean
+  ' Comments  : Determines if a table or query with the specified name exists
+  ' Parameters: strDatabase - path and name of the database or "" (blank string) for the current database
+  '             strName - name to check for
+  ' Returns   : True if a table or query exists with the specified name, False otherwise
+  '
+  Dim dbsTmp As Database
+  Dim conTmp As Container
+  Dim varTmp As Variant
+
+  On Error GoTo PROC_ERR
+  
+  If strDatabase = "" Then
+    Set dbsTmp = CurrentDb()
+  Else
+    Set dbsTmp = DBEngine.Workspaces(0).OpenDatabase(strDatabase)
+  End If
+
+  Set conTmp = dbsTmp.Containers("Tables")
+  
+  ' Disable error handling and try and reference a table/query with the given name
+  On Error Resume Next
+  varTmp = conTmp.Documents(strName).Name
+
+  ' If an error occurred, there is no object by that name
+  TableOrQueryExists_TSB = (Err.Number = 0)
+  
+  On Error GoTo PROC_ERR
+
+  dbsTmp.Close
+
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  TableOrQueryExists_TSB = False
+  Resume PROC_EXIT
+  
+End Function
+
+Function IsFormOpen_TSB(strFormName As String) As Boolean
+  ' Comments  : Determines if the named form is open
+  ' Parameters: strFormName - form to check for
+  ' Returns   : True - form is open, False - form is not open
+  '
+  IsFormOpen_TSB = (SysCmd(acSysCmdGetObjectState, acForm, strFormName) = acObjStateOpen)
+
+End Function
+
+

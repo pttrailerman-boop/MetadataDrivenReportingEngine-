@@ -1,0 +1,45 @@
+Attribute VB_Name = "basBrowse"
+' basBrowse
+Option Compare Database
+Option Explicit
+
+
+Public Function BrowseFile(varDocType As Variant, varExtension As Variant) As String
+
+    Dim strFile As String
+    With Application.FileDialog(3)
+        .Title = "Select File"
+        .Filters.Clear
+        If Not IsNull(varDocType) Then
+            .Filters.Add varDocType, "*." & varExtension
+         End If
+        .Filters.Add "All Files", "*.*"
+        If .Show Then
+            strFile = .SelectedItems(1)
+        Else
+            MsgBox "No file selected", vbInformation
+            Exit Function
+        End If
+    End With
+    
+    BrowseFile = strFile
+    
+End Function
+
+
+Public Function BrowseFolder()
+
+    Dim strFolder As String
+    With Application.FileDialog(4)
+        .Title = "Select Folder"
+        If .Show Then
+            strFolder = .SelectedItems(1)
+        Else
+            MsgBox "No folder selected", vbInformation
+            Exit Function
+        End If
+    End With
+    
+    BrowseFolder = strFolder
+
+End Function

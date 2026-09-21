@@ -1,0 +1,36 @@
+Attribute VB_Name = "mod_IsReportOpen"
+Option Compare Database
+Option Explicit
+
+Function IsReportOpen_TSB(strReportName As String) As Boolean
+  ' Comments  : Determines if the named Report is open
+  ' Parameters: strReportName - Report to check for
+  ' Returns   : True - Report is open, False - Report is not open
+  '
+  IsReportOpen_TSB = (SysCmd(acSysCmdGetObjectState, acReport, strReportName) = acObjStateOpen)
+
+End Function
+
+Function FileExists_TSB(strDest As String) As Boolean
+  ' Comments  : Determines if the named file exists
+  ' Parameters: strDest - file to check
+  ' Returns   : True-file exists, false otherwise
+  '
+  Dim intLen As Integer
+ 
+  On Error Resume Next
+  intLen = Len(Dir(strDest))
+
+  FileExists_TSB = (Not Err And intLen > 0)
+
+End Function
+
+Function IsObjectOpen_TSB(intType As Integer, strName As String) As Boolean
+  ' Comments  : Determines if the named Access object is open
+  ' Parameters: intType - type of object acTable, acQuery, acForm, acReport, acMacro, acModule
+  '             strName - name of object to check
+  ' Returns   : True-object is open, false otherwise
+  '
+  IsObjectOpen_TSB = (SysCmd(acSysCmdGetObjectState, intType, strName) <> 0)
+  
+End Function

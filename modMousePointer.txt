@@ -1,0 +1,71 @@
+Attribute VB_Name = "modMousePointer"
+
+
+Function SetMousePointer_TSB(intPointer As Integer) As Boolean
+  ' Comments  : sets the mouse pointer
+  ' Parameters: intPointer - 0 (Default) The shape is determined by Microsoft Access
+  '                          1 Normal Select (Arrow)
+  '                          3 Text Select (I-Beam)
+  '                          7 Vertical Resize (Size N, S)
+  '                          9 Horizontal Resize (Size E, W)
+  '                         11 Busy (Hourglass)
+  ' Returns   : True if successful, False otherwise
+  '
+  On Error GoTo PROC_ERR
+  
+  Application.Screen.MousePointer = intPointer
+  
+  SetMousePointer_TSB = True
+  
+PROC_EXIT:
+  Exit Function
+  
+PROC_ERR:
+  SetMousePointer_TSB = False
+  Resume PROC_EXIT
+  
+End Function
+
+Function adhReplace(ByVal varvalue As Variant, ByVal strFind As String, ByVal strReplace As String) As Variant
+
+  
+    
+    ' Replace all instances of strFind with strReplace in varValue.
+    
+    Dim intLenFind As Integer
+    Dim intLenReplace As Integer
+    Dim intPos As Integer
+    
+    If IsNull(varvalue) Then
+        adhReplace = Null
+    Else
+        intLenFind = Len(strFind)
+        intLenReplace = Len(strReplace)
+        
+        intPos = 1
+        Do
+            intPos = InStr(intPos, varvalue, strFind)
+            If intPos > 0 Then
+                varvalue = Left(varvalue, intPos - 1) & strReplace & Mid(varvalue, intPos + intLenFind)
+                intPos = intPos + intLenReplace
+            End If
+        Loop Until intPos = 0
+    End If
+    adhReplace = varvalue
+End Function
+
+Public Sub EnablePaint(ByRef frmName As Form, _
+                       ByVal SetPainting As Integer)
+
+    frmName.Painting = SetPainting
+    
+    ' Form painting is turned off.
+    If SetPainting = False Then
+        DoCmd.Hourglass True
+    Else
+        DoCmd.Hourglass False
+    End If
+    
+End Sub
+
+

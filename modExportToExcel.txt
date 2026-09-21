@@ -1,0 +1,470 @@
+Attribute VB_Name = "modExportToExcel"
+Option Compare Database
+Option Explicit
+Public glblPwd As Variant
+Public glbWeeksToAdd As Variant
+Public glbId As Variant
+Public boolDetector As Boolean
+Public objXLSheet As Object
+Public objXLworkBook As Object
+
+Function GetCurrentDBNamePath_TSB() As String
+  ' Comments  : Returns the path and name of the current database
+  ' Parameters: None
+  ' Returns   : string
+  '
+  Dim dbsCurrent As Database
+  Set dbsCurrent = CurrentDb()
+      GetCurrentDBNamePath_TSB = dbsCurrent.Name
+      dbsCurrent.Close
+  
+End Function
+Function createSpreadsheetReport(rptString As String, fldString As String, fldQname As String, _
+tabstr As String, spacingstr As String, spcngstrtotab As String, rRender As Boolean)
+'rptString is the sql string representing the report table with the sequence of queries
+'fldString is the field inside rptString that has the sql statements we wnt to execute
+'fldQname is the name of each query in rptString!fldString that gets built/executed
+'tabstr is the name of the tabs as found in tblReportSequence - represents query or table with data in it
+'spacingStr is the name of the table wich represents grouping information - mulitple - higher orders of  grouping
+'spcngStrToTab is the name of the table wich represents a join between TAB and Spcaing - lets the program apply spacing information by tab
+
+Dim db As Database
+Dim iCounter As Integer
+Dim strPreSheetName As String
+
+Dim myOpenFile As TSBAPI_OPENFILE
+
+Dim bExists As Boolean
+Dim fok As Variant
+Dim tOK As Boolean
+
+Dim rs1 As dao.recordSet
+Dim rs2 As dao.recordSet
+Dim rsTab As dao.recordSet
+
+Dim strFileOne As String
+Dim mypath As String
+Dim tmpString As String
+Dim qOk As Boolean
+Dim sfilename As String
+Dim sPath As String
+Dim sqlStr As String
+
+Dim lnStr As Integer
+
+Dim sKPI As String
+
+
+Dim oExcel As Object
+Dim oBook As Object
+Dim oSheet As Object
+
+'Dim cmd As New ADODB.Command
+'Dim conn As New ADODB.Connection
+'Dim rsa As New ADODB.recordSet
+Dim tableString As String
+Dim strSheet As String
+
+
+Dim fs As Scripting.FileSystemObject
+Dim clsCreateRecord As New clsCreateRecord
+Dim clsExport As New clsExport
+
+Set oExcel = CreateObject("Excel.Application")
+sKPI = CurrentProject.Path & "\" & "BPReportKPI.accdb"
+
+
+On Error GoTo meErr:
+
+
+reStart:
+
+Set db = CurrentDb
+
+mypath = CurrentProject.Path
+
+
+Set fs = CreateObject("Scripting.FileSystemObject")
+
+
+ ' ==============================================
+  ' Example code for GetSaveFileEX_TSB()
+  ' ----------------------------------------------
+  ' Prompts the user to specify a new file name
+  ' using the Windows Common Dialogs. This
+  ' extended version sets various parameters.
+  ' ==============================================
+ 
+  ' Specify the default extension
+  myOpenFile.strDefaultExtension = ".XLS"
+  myOpenFile.strDialogTitle = "Save This File(s) as "
+  myOpenFile.strFilter = CreateFilterString_TSB("Excel Files (*.XLSX)", "*.XLSX", "All Files (*.*)", "*.*")
+
+  strFileOne = GetSaveFileEX_TSB(myOpenFile)
+  strFileOne = myOpenFile.strFullPathReturned
+  strFileOne = Left(strFileOne, myOpenFile.intFileOffset)
+
+
+
+  
+  
+  If strFileOne = "" Then
+  MsgBox "You did not select a valid path and output file!", vbInformation, "Export Stopped"
+  Call SetMousePointer_TSB(0)
+  Exit Function
+  Else
+  MsgBox "You are about to save to " & myOpenFile.strFullPathReturned
+  End If
+
+'--------------------------------------Export Routine--------------------------------------
+'------------------------each report will have a cache table ------------------------------
+'------------------------the cache table will be built and populated from queries in the---
+'------------------------tblReportSequence table.  squence of queries is also determined in
+'------------------------this table.
+
+Call SetMousePointer_TSB(11)
+
+Set rs1 = db.OpenRecordset(rptString, dbOpenDynaset)
+
+Debug.Print rptString
+rs1.MoveFirst
+'rs1.MoveNext  'unremark to just run code that builds spreadsheet
+'rs1.MoveNext  'this will bypass getting new data from sql server
+'rs1.MoveNext  'only works with the very first sequence in tblGoodFieldName_Report
+
+
+While rs1.EOF = False
+
+    If rs1![isTable?] = -1 Then
+        tmpString = Trim(rs1(fldQname))
+        Debug.Print tmpString
+        '--get rid of any cache tables
+        If TableOrQueryExists_TSB("", tmpString) = True Then
+                DoCmd.DeleteObject acTable, tmpString
+        End If
+    Else
+
+            With clsCreateRecord
+            Debug.Print rs1(fldQname)
+            Debug.Print rs1(fldString)
+            Debug.Print rs1![Exec]
+            
+                .prpName = Trim(rs1(fldQname))
+                .prpSqlString = Trim(rs1(fldString))
+                .prpExecute = rs1![Exec]
+                qOk = .CreateQuery
+            End With
+    End If
+    rs1.MoveNext
+Wend
+
+Call SetMousePointer_TSB(0)
+'----------------------------shove data into excel--------------------------------------------------------
+'----------------------------Instatiate clsExport------------------
+'----------------------------clsExport will format the excel sheet you create - tab by tab basis
+'----------------------------Also pass to it the break tables---break tables allow
+'----------------------------the class to break the sheet at sort/group intervals based on record
+'-----------------------------counts from access
+Call SetMousePointer_TSB(11)
+
+'get tab sql
+lnStr = Len(tabstr)
+lnStr = lnStr - 1
+
+
+sfilename = CStr(myOpenFile.strFileNameReturned)
+sPath = myOpenFile.strFullPathReturned
+bExists = FileExists_TSB(sPath)
+'-------------------------------Quick Export of data to Excel ISAM driver!---------------------------------------------------
+'-------------------------------Excel file exists User chooses to overwrite or not to overwrite------------------------------
+    If bExists = True Then
+                    fok = MsgBox("This file already exists, " & _
+                    "would you like to overwrite it?", vbYesNo, "Overwrite?")
+                    Select Case fok
+                        Case 6
+                            fs.DeleteFile sPath, False
+                            Set rsTab = db.OpenRecordset(tabstr, dbOpenDynaset)
+                            
+                            rsTab.MoveFirst
+                            rsTab.MoveLast
+                            rsTab.MoveFirst
+                            iCounter = 1
+                            
+                            While rsTab.EOF = False
+                            
+                              If FileExists_TSB(sPath) = False Then
+                             Set oBook = oExcel.Workbooks.Add
+                              oExcel.Application.Windows(1).Visible = True
+                              oExcel.Application.Windows(1).WindowState = xlMaximized
+
+                                         With oBook
+                                            .SaveAs FileName:=sPath
+                                         End With
+                                End If
+    
+                           Set oBook = oExcel.Workbooks.Open(sPath)
+                             oExcel.Application.Windows(1).Visible = True
+                              oExcel.Application.Windows(1).WindowState = xlMaximized
+                              If iCounter = 1 Then
+                              oBook.Sheets(iCounter).Name = rsTab![Tab]
+                              Else
+                              oBook.Sheets.Add
+                              strPreSheetName = "Sheet" & iCounter
+                              oBook.Sheets(strPreSheetName).Name = rsTab![Tab]
+                              
+                              End If
+                              strSheet = rsTab![Tab]
+                              
+                              Set oSheet = oBook.Worksheets(strSheet)
+  
+                               'Set cmd.ActiveConnection = conn.Connection
+                            If rsa Is Nothing Then
+                                If (rsa.State And adStateOpen) = adStateClosed Then
+                                rsa.CursorLocation = adUseClient
+                                rsa.CursorType = adOpenDynamic
+                                rsa.LockType = adLockOptimistic
+                                                             
+                                End If
+                                ElseIf (rsa.State And adStateOpen) = adStateOpen Then
+                                rsa.Close
+                            End If
+                            
+                            
+                            
+                                tableString = Trim(rsTab![queryname])
+                           
+                           rsa.Open tableString, conn
+                           oSheet.Range("A2").CopyFromRecordset rsa
+                                    
+                                    iCounter = iCounter + 1
+                                    rsTab.MoveNext
+                            Wend
+                            
+
+                            oBook.Close savechanges:=True
+                            oExcel.Quit
+
+'-----------------------------------Format with clsExport-------------------------------------------------------------------------
+                                With clsExport
+                                        .prpFileName = sPath
+                                        .prpSpacing = spacingstr
+                                        .prpSqlReport = "Select Distinct Report From (" & Mid(tabstr, 1, lnStr) & ")"
+                                        .prpSqlTab = tabstr
+                                        .prpTabSpace = spcngstrtotab
+                                        .prpReportingRules = "tblGoodFieldName_Report"
+                                        .prpSortingGrouping = "tbl_temp_sorting_grouping"
+                                        .prpJustFileName = sfilename
+                                        .prpDontOpenExcel = True
+                                        .prpRender = rRender
+                                        qOk = .OpenXL
+                                End With
+'-------------------------------Excel file exists User chooses NOT TO OVERWRITE - give option of repeating process-----------------
+                        Case 7
+                            fok = MsgBox("You chose not to overwrite the file." & vbCrLf & _
+                                  "Would you like to try again?", vbYesNo, "Continue?")
+                                  If fok = 6 Then
+                                    GoTo reStart:
+                                  Else
+                                    Call SetMousePointer_TSB(0)
+                                    Exit Function
+                                  End If
+                            End Select
+                        Call SetMousePointer_TSB(0)
+    Else
+'called from error below - used to save file when
+'permission is denied on file because of lock
+resumeSaveFile:
+'-------------------------------Quick Export of data to Excel Using ADO!---------------------------------------------------
+                            Set rsTab = db.OpenRecordset(tabstr, dbOpenDynaset)
+                            
+                                        
+                         
+                            rsTab.MoveFirst
+                            rsTab.MoveLast
+                            rsTab.MoveFirst
+                            iCounter = 1
+                            
+                            While rsTab.EOF = False
+                            
+                              If FileExists_TSB(sPath) = False Then
+                             Set oBook = oExcel.Workbooks.Add
+                              oExcel.Application.Windows(1).Visible = True
+                              oExcel.Application.Windows(1).WindowState = xlMaximized
+
+                                         With oBook
+                                            .SaveAs FileName:=sPath
+                                         End With
+                                End If
+    
+                           Set oBook = oExcel.Workbooks.Open(sPath)
+                             oExcel.Application.Windows(1).Visible = True
+                              oExcel.Application.Windows(1).WindowState = xlMaximized
+                              If iCounter = 1 Then
+                              oBook.Sheets(iCounter).Name = rsTab![Tab]
+                              Else
+                              oBook.Sheets.Add
+                              strPreSheetName = "Sheet" & iCounter
+                              oBook.Sheets(strPreSheetName).Name = rsTab![Tab]
+                              
+                              End If
+                              strSheet = rsTab![Tab]
+                              
+                              Set oSheet = oBook.Worksheets(strSheet)
+  
+                               'Set cmd.ActiveConnection = conn.Connection
+                            If rsa Is Nothing Then
+                                If (rsa.State And adStateOpen) = adStateClosed Then
+                                rsa.CursorLocation = adUseClient
+                                rsa.CursorType = adOpenDynamic
+                                rsa.LockType = adLockOptimistic
+                                                             
+                                End If
+                                ElseIf (rsa.State And adStateOpen) = adStateOpen Then
+                                rsa.Close
+                            End If
+                            
+                            
+                                
+                                tableString = Trim(rsTab![queryname])
+                                                    
+                           
+                           rsa.Open tableString, conn
+                           oSheet.Range("A2").CopyFromRecordset rsa
+                             iCounter = iCounter + 1
+                              
+                              rsTab.MoveNext
+                            Wend
+                            
+
+                            oBook.Close savechanges:=True
+                            oExcel.Quit
+                            
+
+                                With clsExport
+                                        .prpFileName = sPath
+                                        .prpSpacing = spacingstr
+                                        .prpSqlReport = "Select Distinct Report From (" & tabstr & ")"
+                                        .prpSqlTab = tabstr
+                                        .prpTabSpace = spcngstrtotab
+                                        .prpReportingRules = "tblGoodFieldName_Report"
+                                        .prpSortingGrouping = "tbl_temp_sorting_grouping"
+                                        .prpJustFileName = sfilename
+                                        .prpDontOpenExcel = True
+                                        .prpRender = rRender
+                                        qOk = .OpenXL
+                                End With
+                            Call SetMousePointer_TSB(0)
+    End If
+'it worked
+Call SetMousePointer_TSB(0)
+'-----------------------------------------------------------------------------------------------------------------------------------------
+Exit Function
+
+meErr:
+
+If qOk = False Then
+MsgBox Err.Number & " " & Err.Description
+
+    MsgBox "Utility Failed to parse Excel Sheet correctly" & vbCrLf _
+    & "You should review the table: tblReportSequence and review instructions." & vbCrLf _
+    & "Instructions show you how to create sorting and grouping levels in addtion to queries " & vbCrLf _
+    & "that produce the data for the Excel Report and Modify the data to prepare it for reporting", vbCritical, "Problem"
+    
+    Exit Function
+End If
+
+If Len(sfilename) <= 0 Then
+sfilename = "ProblemFILE"
+End If
+
+If Err.Number = 3044 Or Err.Number = -2147220991 Then
+        tOK = fs.FolderExists(mypath & "\problemFolder")
+        
+        If tOK = True Then
+            fs.DeleteFolder mypath & "\problemFolder"
+        End If
+        
+        MkDir mypath & "\problemFolder"
+        sfilename = "ProblemFile" & Rnd(1)
+        sPath = mypath & "\" & "problemFolder\" & sfilename & ".xls"
+        MsgBox "Problems Saving Your file!" & _
+        vbCrLf & "file saved to: " & sPath & " instead.", vbCritical, "No such directory or permission denied"
+        GoTo resumeSaveFile:
+
+ElseIf Err.Number = 1004 Then
+        MsgBox "Can not create Excel report because Excel and / or another Excel sheet is open" & vbCrLf & _
+                "You must close Excel as well as any open Excel workbooks" & vbCrLf & vbCrLf & _
+                "If this problem continues, check to make sure that Excel is not running in the back ground" & vbCrLf & _
+                "by looking in the 'Task Manager' - press CTRL+ALT+DELETE, click Task Manager Button" & vbCrLf & _
+                "If an instance or instances of Excel are running, but none are in the foreground, close them" & vbCrLf & _
+                "with the Task Manager.  Try the utility again", vbCritical, "Excel already open"
+                
+                Err = 0
+                Call SetMousePointer_TSB(0)
+        Exit Function
+
+ElseIf Err.Number = 70 Then
+        MsgBox "Can not create Excel report because it and / or another Excel sheet is open" & vbCrLf & _
+                "You must close Excel as well as any open Excel workbooks" & vbCrLf & vbCrLf & _
+                "If this problem continues, check to make sure that Excel is not running in the back ground" & vbCrLf & _
+                "by looking in the 'Task Manager' - press CTRL+ALT+DELETE, click Task Manager Button" & vbCrLf & _
+                "If an instance or instances of Excel are running, but none are in the foreground, close them" & vbCrLf & _
+                "with the Task Manager.  Try the utility again", vbCritical, "Excel already open"
+                
+                Err = 0
+                Call SetMousePointer_TSB(0)
+        Exit Function
+Else
+        MsgBox "Errors processing spreadsheet" & vbCrLf & vbCrLf & Err.Number & " " & vbCrLf & vbCrLf & Err.Description, 16, "Problem"
+                Err = 0
+                Call SetMousePointer_TSB(0)
+        Exit Function
+End If
+End Function
+
+Function ReleaseCache(rptString As String) As String
+Dim db As Database
+Dim rs1 As dao.recordSet
+Dim clsCreateRecord As New clsCreateRecord
+Dim qOk As Boolean
+Dim rsl As dao.recordSet
+
+On Error GoTo errReleaseCache
+
+Set db = CurrentDb
+
+Call SetMousePointer_TSB(11)
+
+Set rs1 = db.OpenRecordset(rptString, dbOpenDynaset)
+
+If rs1.RecordCount > 0 Then
+rs1.MoveFirst
+
+While rs1.EOF = False
+            With clsCreateRecord
+                .prpName = Trim("qryDelete_aq_" & rs1![queryname])
+                .prpSqlString = Trim("Delete * From " & rs1![queryname])
+                .prpExecute = True
+                qOk = .CreateQuery
+            End With
+    rs1.MoveNext
+Wend
+Else
+ReleaseCache = ""
+    Call SetMousePointer_TSB(0)
+Exit Function
+End If
+
+errReleaseCache:
+If Err.Number = -2147220991 Or Err.Number = 3021 Then
+Resume Next
+Else
+'MsgBox Err.Number
+
+ ReleaseCache = rs1![queryname] & "; " & Err.Number & ", " & Err.Description
+End If
+
+    Call SetMousePointer_TSB(0)
+End Function
+
+
