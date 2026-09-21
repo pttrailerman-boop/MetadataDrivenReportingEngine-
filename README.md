@@ -54,10 +54,12 @@ Render Sheet? behavior:
 Unchecked:
 The engine builds the Excel workbook without rendering the sheet to the screen.
 Typical runtime: around 2 minutes (varies by machine).
+
 Checked:
 The engine renders the sheet visibly while building it.
 Typical runtime: around 5 minutes (varies by machine).
 Useful for demonstration or debugging.
+
 The charting module uses metadata stored inside ReportKPI.accdb to produce:
 
 KPI charts
