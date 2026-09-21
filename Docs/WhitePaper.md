@@ -43,14 +43,24 @@ Each stage is driven by metadata rather than hard‑coded logic.
 
 3. tblReportSequence — SQL Pipeline & Workflow Orchestrator
 The reporting pipeline begins with tblReportSequence, which defines:
+
 ReportName — logical identifier
+
 TabOrder — ordering of report tabs
+
 QueryName — source query or SQL
+
 SQL_PreProcess — optional SQL executed before rendering
+
 SpacingTable — grouping metadata
+
 HasTotals — whether summary rows are required
+
 Header/Footer overrides
+
 Notes — human‑readable instructions
+
+This table acts as the report manifest, describing how each report tab should be processed.
 
 This table acts as the report manifest, describing how each report tab should be processed.
 
