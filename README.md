@@ -17,16 +17,13 @@ DemoKPI_ExcelWriter.xlsx
 Windows Security Note
 Windows may block the Access file because it contains VBA code.
 To unblock:
-
 Right‑click the downloaded file
 Select Properties
 Check Unblock
 Click OK
-
 This is a standard Windows security feature.
 
 This project showcases:
-
 metadata‑driven report definitions
 hybrid Access + SQL workflow patterns
 operational KPI extraction
@@ -44,29 +41,24 @@ A Get Data button that shows the instructional message:
 “Done retrieving data, please review your results. (This is sample data, no data actually retrieved. Use this button to run your custom query logic.)”
 
 A chart icon that launches the reporting workflow
-
 The Report Manager does not retrieve or process data.
 The real reporting engine begins when the user clicks the chart icon, which opens frmReportLauncher.
 
 2. Charting module (frmReportLauncher)
 This is the functional core of the demo.
-
 The launcher form provides:
 A dropdown to select a report definition
 A checkbox labeled Render Sheet?
 A button to generate Excel output
 
 Render Sheet? behavior:
-
 Unchecked:
 The engine builds the Excel workbook without rendering the sheet to the screen.
 Typical runtime: around 2 minutes (varies by machine).
-
 Checked:
 The engine renders the sheet visibly while building it.
 Typical runtime: around 5 minutes (varies by machine).
 Useful for demonstration or debugging.
-
 The charting module uses metadata stored inside ReportKPI.accdb to produce:
 
 KPI charts
