@@ -1,7 +1,7 @@
-README.md — MetadataDrivenReportingEngine
+# README.md — MetadataDrivenReportingEngine
 A fully synthetic, metadata‑driven reporting engine demonstrating the architectural patterns I use in enterprise reporting systems. All tables, fields, logic, and workflows in this demo are fictional and do not correspond to any real system.
 
-📌 Overview
+## 📌 Overview
 The MetadataDrivenReportingEngine is a lightweight hybrid reporting framework built using Microsoft Access (VBA/DAO/ADO) and SQL Server. It demonstrates how operational teams can structure reporting workflows, apply metadata‑driven transformations, and generate KPI dashboards and Excel reports.
 
 This demo intentionally uses sample data only.
@@ -32,8 +32,8 @@ operational KPI extraction
 Excel automation via VBA
 separation of data retrieval and visualization
 
-🧩 Architecture summary
-1. Report Manager (frmReportManager)
+## 🧩 Architecture summary
+### 1. Report Manager (frmReportManager)
 This form is a static preview of a reporting UI. It displays:
 A locked date range (non‑interactive)
 A grid of pre‑loaded sample data
@@ -45,7 +45,7 @@ A chart icon that launches the reporting workflow
 The Report Manager does not retrieve or process data.
 The real reporting engine begins when the user clicks the chart icon, which opens frmReportLauncher.
 
-2. Charting module (frmReportLauncher)
+### 2. Charting module (frmReportLauncher)
 This is the functional core of the demo.
 The launcher form provides:
 A dropdown to select a report definition
