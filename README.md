@@ -108,7 +108,7 @@ mod_IsReportOpen.txt — report/form state checks
 These modules demonstrate clean separation of responsibilities and a metadata‑driven workflow.
 
 ```
-##📁 Repository structure
+## 📁 Repository structure
 text
 MetadataDrivenReportingEngine/
 │
