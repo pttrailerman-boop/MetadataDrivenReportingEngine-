@@ -9,12 +9,14 @@ No live SQL queries are executed.
 
 The Report Manager form displays pre‑loaded sample data and a locked date range. The Get Data button simply shows an instructional message explaining that this is a demo. The actual reporting workflow is launched through the chart icon, which opens the KPI launcher form.
 
-Demo Files
+Demo Files:
+
 Download the demo files from the /Demo folder:
 ReportKPI.accdb
 DemoKPI_ExcelWriter.xlsx
 
-Windows Security Note
+Windows Security Note:
+
 Windows may block the Access file because it contains VBA code.
 To unblock:
 Right‑click the downloaded file
