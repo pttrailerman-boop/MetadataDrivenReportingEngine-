@@ -116,6 +116,9 @@ MetadataDrivenReportingEngine/
 │
 ├── README.md
 │
+├── Docs/
+│   ├── WhitePaper.md
+│
 ├── Screenshots/
 │   ├── ReportManager.png
 │   ├── KPIChartingForm.png
