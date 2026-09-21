@@ -66,7 +66,6 @@ spacing rules
 header/footer placement
 nested group behavior
 
-
 5. Recursive Line Break Engine (fn_FindBreaks)
 The recursive break engine is responsible for constructing the break table that drives row placement in Excel.
 Responsibilities:
@@ -100,7 +99,6 @@ Maintain group hierarchy
 
 7. Metadata Formatting Tables
 Formatting is controlled by three metadata tables:
-
 Header (tblGoodFieldName_Header)
 Column headings
 Visibility
@@ -129,7 +127,6 @@ Column visibility logic
 
 8. Excel Rendering Engine (fn_applyFormat)
 The rendering engine applies metadata to produce the final Excel workbook.
-
 Responsibilities:
 Render headers
 Render detail rows
@@ -141,7 +138,6 @@ Finalize workbook
 
 9. Example Walkthrough
 A full example demonstrates:
-
 SQL pre‑processing
 grouping table
 break table
