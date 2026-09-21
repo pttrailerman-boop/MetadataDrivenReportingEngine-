@@ -121,9 +121,6 @@ Extended summaries
 Grand totals
 Line weights
 Spacing rules
-Guided Links:
-Metadata‑driven formatting
-Column visibility logic
 
 8. Excel Rendering Engine (fn_applyFormat)
 The rendering engine applies metadata to produce the final Excel workbook.
