@@ -4,7 +4,7 @@ The MetadataDrivenReportingEngine is a synthetic demonstration of a metadata‑d
 
 This white paper describes the full reporting pipeline, beginning with SQL orchestration in tblReportSequence, continuing through grouping and break‑table construction, and concluding with metadata‑driven Excel rendering.
 
-2. ## Pipeline Overview
+## 2. Pipeline Overview
 The reporting engine follows a deterministic, metadata‑driven pipeline:
 
 ```
