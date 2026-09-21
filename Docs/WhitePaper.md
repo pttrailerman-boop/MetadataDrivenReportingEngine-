@@ -40,7 +40,7 @@ Code
 ```
 Each stage is driven by metadata rather than hard‑coded logic.
 
-3. tblReportSequence — SQL Pipeline & Workflow Orchestrator
+## 3. tblReportSequence — SQL Pipeline & Workflow Orchestrator
 The reporting pipeline begins with tblReportSequence, which defines:
 
 ReportName — logical identifier
@@ -63,7 +63,7 @@ This table acts as the report manifest, describing how each report tab should be
 
 This table acts as the report manifest, describing how each report tab should be processed.
 
-4. GGrouping & Sorting Tables
+## 4. GGrouping & Sorting Tables
 Grouping metadata is stored in:
 
 tblNameHolder — group names, descriptions, and order
@@ -89,7 +89,7 @@ spacing rules
 header/footer placement
 nested group behavior
 
-5.Recursive Line Break Engine (fn_FindBreaks)
+## 5.Recursive Line Break Engine (fn_FindBreaks)
 The recursive break engine is responsible for constructing the break table that drives row placement in Excel.
 
 Responsibilities:
@@ -116,7 +116,7 @@ Group A
  └── Footer
 ```
 
-6. Row Insertion (fn_break)
+## 6. Row Insertion (fn_break)
 The break table contains Insert_1 values that determine where rows should be inserted in Excel.
 
 Responsibilities:
@@ -126,7 +126,7 @@ Apply spacing rules
 
 Maintain group hierarchy
 
-7. Metadata Formatting Tables
+## 7. Metadata Formatting Tables
 Formatting is controlled by three metadata tables:
 
 Header (tblGoodFieldName_Header)
@@ -166,7 +166,7 @@ Line weights
 
 Spacing rules
 
-8. Excel Rendering Engine (fn_applyFormat)
+## 8. Excel Rendering Engine (fn_applyFormat)
 The rendering engine applies metadata to produce the final Excel workbook.
 
 Responsibilities:
@@ -184,7 +184,7 @@ Add grand totals
 
 Finalize workbook
 
-9. Example Walkthrough
+## 9. Example Walkthrough
 A full example demonstrates:
 
 SQL pre‑processing
@@ -199,7 +199,7 @@ final Excel output
 
 (This section can be expanded later.)
 
-10. Why Metadata‑Driven Reporting Scales
+## 10. Why Metadata‑Driven Reporting Scales
 Metadata‑driven design allows:
 
 adding new reports without code
