@@ -86,13 +86,21 @@ These modules contain generic workflow logic and do not reference any real syste
 Included modules:
 
 basBrowse.txt — file browsing utilities
+
 clsCreateRecord.txt — record creation and querydef lifecycle
+
 clsExport.txt — Excel export and formatting logic
+
 Connections.txt — ADO/DAO connection helpers
+
 modOpenFile.txt — file opening utilities
+
 modMousePointer.txt — UI pointer state management
+
 modExportToExcel.txt — Excel automation pipeline
+
 modCreateQueryDef.txt — querydef creation and cleanup
+
 mod_IsReportOpen.txt — report/form state checks
 
 These modules demonstrate clean separation of responsibilities and a metadata‑driven workflow.
