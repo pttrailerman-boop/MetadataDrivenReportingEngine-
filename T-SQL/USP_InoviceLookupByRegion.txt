@@ -1,0 +1,127 @@
+sql
+-- Synthetic stored procedure similar in structure and complexity to those I developed at a large insurance company.
+-- All table names, column names, and business logic have been fully sanitized.
+
+SET NOCOUNT ON;
+
+DECLARE @RegionCode      CHAR(2);
+DECLARE @GroupID         CHAR(5);
+DECLARE @SubGroupID      CHAR(2);
+DECLARE @PeriodStart     CHAR(8);
+DECLARE @InvoiceNumber   CHAR(10);
+DECLARE @QueryMode       CHAR(1);
+
+DECLARE @RegionLabel     CHAR(2);
+DECLARE @HostSystem      VARCHAR(20);
+DECLARE @DataPartition   VARCHAR(20);
+DECLARE @SQL             VARCHAR(8000);
+
+-----------------------------------------------------------------------
+-- Example input (synthetic)
+-----------------------------------------------------------------------
+SET @RegionCode    = '28';
+SET @GroupID       = '12243';
+SET @SubGroupID    = '00';
+SET @PeriodStart   = '20120301';
+SET @InvoiceNumber = '7451974';
+SET @QueryMode     = '';
+
+SET @InvoiceNumber = LTRIM(RTRIM(@InvoiceNumber));
+SET @SubGroupID    = UPPER(@SubGroupID);
+
+-----------------------------------------------------------------------
+-- Region → label mapping (synthetic)
+-----------------------------------------------------------------------
+SELECT @RegionLabel =
+    CASE @RegionCode
+        WHEN '10' THEN 'NW'
+        WHEN '12' THEN 'HI'
+        WHEN '14' THEN 'OH'
+        WHEN '16' THEN 'CO'
+        WHEN '28' THEN 'GA'
+        WHEN '30' THEN 'TR'
+    END;
+
+-----------------------------------------------------------------------
+-- Region → host system mapping (synthetic)
+-----------------------------------------------------------------------
+SELECT @HostSystem =
+    CASE @RegionCode
+        WHEN '10' THEN 'SYS_A'
+        WHEN '12' THEN 'SYS_B'
+        WHEN '14' THEN 'SYS_C'
+        WHEN '16' THEN 'SYS_D'
+        WHEN '28' THEN 'SYS_E'
+        WHEN '30' THEN 'SYS_F'
+    END;
+
+-----------------------------------------------------------------------
+-- Region → data partition mapping (synthetic)
+-----------------------------------------------------------------------
+SELECT @DataPartition =
+    CASE @RegionCode
+        WHEN '10' THEN 'PART_A'
+        WHEN '12' THEN 'PART_B'
+        WHEN '14' THEN 'PART_C'
+        WHEN '16' THEN 'PART_D'
+        WHEN '28' THEN 'PART_E'
+        WHEN '30' THEN 'PART_F'
+    END;
+
+-----------------------------------------------------------------------
+-- Build dynamic OPENQUERY SQL
+-----------------------------------------------------------------------
+SET @SQL = '
+SELECT 
+    GroupID,
+    SubGroupID,
+    PeriodStart,
+    SegmentID,
+    SubscriberID,
+    PersonSSN,
+    DisplayName,
+    Amount,
+    RIGHT(REPLICATE(''0'', 10) + CAST(InvoiceNumber AS VARCHAR(10)), 10),
+    CarrierID,
+    ProgramID
+FROM OPENQUERY(' + @DataPartition + ',
+    ''SELECT
+          C.GroupID,
+          C.SubGroupID,
+          C.PeriodStart,
+          C.SegmentID,
+          C.SubscriberID,
+          D.PersonSSN,
+          D.DisplayName,
+          C.Amount,
+          A.InvoiceNumber,
+          C.CarrierID,
+          C.ProgramID
+      FROM ' + @HostSystem + '.InvoiceHeader A,
+           ' + @HostSystem + '.GroupInfo B,
+           ' + @HostSystem + '.InvoiceDetail C,
+           ' + @HostSystem + '.PersonInfo D
+      WHERE A.RegionCode = ''''' + @RegionCode + '''''
+        AND ((A.InvoiceNumber = ' + @InvoiceNumber + ')
+             OR (A.GroupID = ' + @GroupID + '
+                 AND A.SubGroupID = ''''' + @SubGroupID + '''''
+                 AND A.PeriodStart = ' + @PeriodStart + '))
+        AND A.RegionCode = B.RegionCode
+        AND A.GroupID = B.GroupID
+        AND A.SubGroupID = B.SubGroupID
+        AND B.CategoryCode = ''''G''''
+        AND B.RegionCode = C.RegionCode
+        AND B.GroupID = C.GroupID
+        AND B.SubGroupID = C.SubGroupID
+        AND A.PeriodStart = C.PeriodStart
+        AND C.ActiveFlag = ''''Y''''
+        AND C.RegionCode = D.RegionCode
+        AND C.SubscriberID = D.PersonID
+      ORDER BY A.InvoiceNumber'')';
+
+-----------------------------------------------------------------------
+-- Execute dynamic SQL
+-----------------------------------------------------------------------
+EXEC(@SQL);
+
+SET NOCOUNT OFF;
