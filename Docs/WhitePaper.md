@@ -43,7 +43,6 @@ Each stage is driven by metadata rather than hard‑coded logic.
 
 3. tblReportSequence — SQL Pipeline & Workflow Orchestrator
 The reporting pipeline begins with tblReportSequence, which defines:
-
 ReportName — logical identifier
 TabOrder — ordering of report tabs
 QueryName — source query or SQL
@@ -55,15 +54,12 @@ Notes — human‑readable instructions
 
 This table acts as the report manifest, describing how each report tab should be processed.
 
-
 4. Grouping & Sorting Tables
 Grouping metadata is stored in:
-
 tblNameHolder — group names, descriptions, and order
 Spacing tables — define Begin/End positions for each group
 
 These tables determine:
-
 grouping hierarchy
 sort order
 spacing rules
@@ -73,7 +69,6 @@ nested group behavior
 
 5. Recursive Line Break Engine (fn_FindBreaks)
 The recursive break engine is responsible for constructing the break table that drives row placement in Excel.
-
 Responsibilities:
 Read grouping metadata
 Calculate Begin/End positions
