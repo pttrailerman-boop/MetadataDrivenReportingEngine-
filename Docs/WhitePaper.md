@@ -149,6 +149,6 @@ Metadata‑driven design allows:
 adding new reports without code
 changing formatting without code
 adding new grouping logic without code
-adding new KPIs without code
+
 
 
