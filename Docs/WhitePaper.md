@@ -63,7 +63,7 @@ This table acts as the report manifest, describing how each report tab should be
 
 This table acts as the report manifest, describing how each report tab should be processed.
 
-## 4. GGrouping & Sorting Tables
+## 4. Grouping & Sorting Tables
 Grouping metadata is stored in:
 
 tblNameHolder — group names, descriptions, and order
@@ -80,13 +80,6 @@ spacing rules
 
 header/footer placement
 
-nested group behavior
-
-These tables determine:
-grouping hierarchy
-sort order
-spacing rules
-header/footer placement
 nested group behavior
 
 ## 5.Recursive Line Break Engine (fn_FindBreaks)
