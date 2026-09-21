@@ -107,6 +107,7 @@ These modules demonstrate clean separation of responsibilities and a metadata‑
 📁 Repository structure
 text
 MetadataDrivenReportingEngine/
+```
 │
 ├── README.md
 │
@@ -128,25 +129,18 @@ MetadataDrivenReportingEngine/
 └── Demo/
     ├── DemoKPI_ExcelWriter.xlsx
     └── ReportKPI.accdb
+```
+
 🚀 How to run the demo
-Download the repository.
-
+Download the repository file ReportKPI.accdb
 Open ReportKPI.accdb in Microsoft Access.
-
 Open frmReportManager.
-
 Review the pre‑loaded sample data and locked date range.
-
 Click Get Data to see the instructional message.
-
 Click the chart icon to open frmReportLauncher.
-
 Select a report from the dropdown.
-
 (Optional) Check Render Sheet? if you want to watch the sheet being drawn.
-
 Click Create Spreadsheets to generate Excel output.
-
 The resulting Excel file will resemble DemoKPI_ExcelWriter.xlsx.
 
 This demo is designed to show the workflow and architecture, not to retrieve real data.
