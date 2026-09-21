@@ -12,7 +12,9 @@ The Report Manager form displays pre‑loaded sample data and a locked date rang
 ## Demo Files:
 
 Download the demo files from the /Demo folder:
+
 ReportKPI.accdb
+
 DemoKPI_ExcelWriter.xlsx
 
 ## Windows Security Note:
@@ -110,7 +112,6 @@ These modules demonstrate clean separation of responsibilities and a metadata‑
 
 ## 📁 Repository structure
 ```
-text
 MetadataDrivenReportingEngine/
 │
 ├── README.md
