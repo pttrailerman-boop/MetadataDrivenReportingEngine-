@@ -70,7 +70,7 @@ summary sheets
 
 This is where the reporting engine actually runs.
 
-3. Metadata tables (inside Access)
+### 3. Metadata tables (inside Access)
 All metadata lives inside ReportKPI.accdb, including:
 
 report definitions
@@ -81,7 +81,7 @@ sheet layout metadata
 
 No external metadata files are required.
 
-4. VBA modules (sanitized)
+### 4. VBA modules (sanitized)
 All modules are exported as .txt files for easy viewing.
 These modules contain generic workflow logic and do not reference any real systems.
 
@@ -134,7 +134,7 @@ MetadataDrivenReportingEngine/
     └── ReportKPI.accdb
 ```
 
-🚀 How to run the demo
+### 🚀 How to run the demo
 Download the repository file ReportKPI.accdb
 Open ReportKPI.accdb in Microsoft Access.
 Open frmReportManager.
@@ -148,7 +148,7 @@ The resulting Excel file will resemble DemoKPI_ExcelWriter.xlsx.
 
 This demo is designed to show the workflow and architecture, not to retrieve real data.
 
-👤 About the author
+### 👤 About the author
 Alex Fritts is a workflow engineer specializing in:
 
 Access/VBA/COM automation
@@ -159,10 +159,10 @@ Excel automation and reporting engines
 
 He builds tools that help analysts, operators, and technical teams work faster and more reliably.
 
-🏭 Summary
+### 🏭 Summary
 This demo showcases a metadata‑driven reporting engine similar to the architecture used in enterprise environments. It demonstrates how Access, SQL Server, and Excel can work together to produce parameterized KPI dashboards, structured reporting workflows, and automated spreadsheet generation. All data, tables, and logic are fully synthetic and safe for public review.
 
-🎯 Purpose
+### 🎯 Purpose
 This repository is intended as a professional demonstration of:
 
 SQL + Access hybrid engineering
