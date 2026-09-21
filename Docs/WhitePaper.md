@@ -1,10 +1,10 @@
-Metadata‑Driven Reporting Engine — Architectural White Paper
-Introduction
+# Metadata‑Driven Reporting Engine — Architectural White Paper
+## Introduction
 The MetadataDrivenReportingEngine is a synthetic demonstration of a metadata‑driven reporting architecture implemented using Microsoft Access (VBA/DAO/ADO) and SQL Server. It illustrates how reporting systems can be designed to minimize hard‑coded logic, maximize configurability, and support scalable workflows through metadata tables that define structure, formatting, grouping, and rendering behavior.
 
 This white paper describes the full reporting pipeline, beginning with SQL orchestration in tblReportSequence, continuing through grouping and break‑table construction, and concluding with metadata‑driven Excel rendering.
 
-2. Pipeline Overview
+##2. Pipeline Overview
 The reporting engine follows a deterministic, metadata‑driven pipeline:
 
 ```
