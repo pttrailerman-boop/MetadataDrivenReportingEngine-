@@ -29,9 +29,13 @@ This is a standard Windows security feature.
 
 ## This project showcases:
 metadata‑driven report definitions
+
 hybrid Access + SQL workflow patterns
+
 operational KPI extraction
+
 Excel automation via VBA
+
 separation of data retrieval and visualization
 
 ## 🧩 Architecture summary
