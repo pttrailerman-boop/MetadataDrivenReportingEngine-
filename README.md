@@ -17,6 +17,53 @@ ReportKPI.accdb
 
 DemoKPI_ExcelWriter.xlsx
 
+## 🛠️ 64‑bit Office Compatibility
+This Access application is fully compatible with 32‑bit and 64‑bit Microsoft Office.
+If you are running Office 64‑bit, you must ensure the file is unblocked after downloading.
+
+## Why this matters
+Access uses Windows API calls for file dialogs (Open/Save).
+Office 64‑bit requires updated PtrSafe and LongPtr declarations.
+These have already been added to the project.
+
+What you need to do
+After downloading the .accdb file from GitHub:
+
+Right‑click the file
+
+Select Properties
+
+If you see an Unblock checkbox, check it
+
+Click Apply
+
+Open the file normally
+
+This removes the Windows “internet zone” flag that prevents Access from running VBA code.
+
+If the Unblock checkbox does not appear
+Use one of the following:
+
+Move the file into a Trusted Location (Access → Options → Trust Center)
+
+Or run this PowerShell command:
+
+Code
+Unblock-File "C:\Path\To\YourFile.accdb"
+Or extract the ZIP using 7‑Zip, which removes the zone identifier
+
+Once unblocked, the application will run on:
+
+Access 32‑bit
+
+Access 64‑bit
+
+Access Runtime
+
+Windows 10/11
+
+No additional configuration is required.
+
 ## Windows Security Note:
 
 Windows may block the Access file because it contains VBA code.
