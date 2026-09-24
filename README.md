@@ -9,7 +9,7 @@ No live SQL queries are executed.
 
 The Report Manager form displays pre‑loaded sample data and a locked date range. The Get Data button simply shows an instructional message explaining that this is a demo. The actual reporting workflow is launched through the chart icon, which opens the KPI launcher form.
 
-## 64‑bit Office Compatibility
+## 🛠️64‑bit Office Compatibility
 This Access application is fully compatible with 32‑bit and 64‑bit Microsoft Office.
 If you are running Office 64‑bit, you may need to unblock the .accdb file after downloading.
 
