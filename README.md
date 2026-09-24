@@ -9,25 +9,17 @@ No live SQL queries are executed.
 
 The Report Manager form displays pre‑loaded sample data and a locked date range. The Get Data button simply shows an instructional message explaining that this is a demo. The actual reporting workflow is launched through the chart icon, which opens the KPI launcher form.
 
-## Demo Files:
-
-Download the demo files from the /Demo folder:
-
-ReportKPI.accdb
-
-DemoKPI_ExcelWriter.xlsx
-
-## 🛠️ 64‑bit Office Compatibility
+## 64‑bit Office Compatibility
 This Access application is fully compatible with 32‑bit and 64‑bit Microsoft Office.
-If you are running Office 64‑bit, you must ensure the file is unblocked after downloading.
+If you are running Office 64‑bit, you may need to unblock the .accdb file after downloading.
 
 ## Why this matters
 Access uses Windows API calls for file dialogs (Open/Save).
 Office 64‑bit requires updated PtrSafe and LongPtr declarations.
-These have already been added to the project.
+These updates have already been applied to this project.
 
-What you need to do
-After downloading the .accdb file from GitHub:
+## How to unblock the file
+After downloading the .accdb file:
 
 Right‑click the file
 
@@ -41,10 +33,11 @@ Open the file normally
 
 This removes the Windows “internet zone” flag that prevents Access from running VBA code.
 
-If the Unblock checkbox does not appear
+## If the Unblock checkbox does not appear
 Use one of the following:
 
-Move the file into a Trusted Location (Access → Options → Trust Center)
+Move the file into a Trusted Location  
+(Access → Options → Trust Center → Trusted Locations)
 
 Or run this PowerShell command:
 
@@ -64,14 +57,19 @@ Windows 10/11
 
 No additional configuration is required.
 
-## Windows Security Note:
-
+## Windows Security Note
 Windows may block the Access file because it contains VBA code.
+
 To unblock:
+
 Right‑click the downloaded file
+
 Select Properties
+
 Check Unblock
+
 Click OK
+
 This is a standard Windows security feature.
 
 ## This project showcases:
