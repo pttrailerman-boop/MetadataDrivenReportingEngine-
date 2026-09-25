@@ -200,6 +200,84 @@ Select a report from the dropdown.
 Click Create Spreadsheets to generate Excel output.
 The resulting Excel file will resemble DemoKPI_ExcelWriter.xlsx.
 
+## 📌 Report Output Location
+After the reporting engine finishes building your Excel workbook (which can take 2–3 minutes depending on your machine), the file is saved automatically to the folder you selected in the launcher form.
+
+To avoid Access security warnings when clicking the hyperlink, you should add this folder as a Trusted Location in Access.
+
+## 📌 Trusted Location Setup
+Access will warn you that hyperlinks may contain viruses unless the folder is trusted.
+
+To trust the folder:
+
+Open Access
+
+Go to File → Options
+
+Select Trust Center
+
+Click Trust Center Settings
+
+Choose Trusted Locations
+
+Click Add new location…
+
+Browse to the folder where your reports are saved
+
+Check “Subfolders of this location are also trusted”
+
+Click OK
+
+After this, Access will no longer show the security warning when you click the hyperlink.
+
+## 📌 Opening Your Report
+When the engine finishes:
+
+The Excel workbook is saved automatically
+
+Excel is closed automatically
+
+The launcher form displays a hyperlink to the saved file
+
+You can open the report in either of two ways:
+
+Click the hyperlink on the form
+
+Or open File Explorer and navigate to the folder manually
+
+## 📌 Why This Matters
+The reporting engine performs a large amount of work:
+
+SQL transforms
+
+metadata-driven layout
+
+banding
+
+grouping
+
+formulas
+
+chart anchors
+
+sheet movement
+
+formatting
+
+Because the workbook takes time to construct, the engine always saves the file before closing Excel to ensure no work is lost.
+
+This guarantees:
+
+No prompts
+
+No accidental “Don’t Save” clicks
+
+No partial workbooks
+
+No corrupted output
+
+A consistent experience across all machines
+
 This demo is designed to show the workflow and architecture, not to retrieve real data.
 
 ### 👤 About the author
