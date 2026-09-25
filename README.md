@@ -188,7 +188,7 @@ MetadataDrivenReportingEngine/
     └── ReportKPI.accdb
 ```
 
-### 🚀 How to run the demo
+## 🚀 How to run the demo
 Download the repository file ReportKPI.accdb
 Open ReportKPI.accdb in Microsoft Access.
 Open frmReportManager.
