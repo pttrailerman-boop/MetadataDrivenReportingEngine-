@@ -119,45 +119,11 @@ Apply spacing rules
 
 Maintain group hierarchy
 
-## 7. Metadata Formatting Tables
-Formatting is controlled by three metadata tables:
-
-Header (tblGoodFieldName_Header)
-Column headings
-
-Visibility
-
-Line weights
-
-Bold/italic
-
-Alignment
-
-Background color
-
-Body (tblGoodFieldName_Report)
-Detail row formatting
-
-Numeric formats
-
-Text formats
-
-Conditional formatting
-
-Column widths
-
-Visibility
-
-Footer / Summary (tblGoodFieldName_G_Totals)
-Summary rows
-
-Extended summaries
-
-Grand totals
-
-Line weights
-
-Spacing rules
+## 7. Metadata Configuration Reference
+ 
+Detailed field definitions, accepted values, worksheet-zone diagrams,
+formula placeholders, and worked examples are provided in the
+MetadataConfigurationGuide.md.
 
 ## 8. Excel Rendering Engine (fn_applyFormat)
 The rendering engine applies metadata to produce the final Excel workbook.
