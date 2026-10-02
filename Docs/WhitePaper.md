@@ -183,15 +183,14 @@ The current implementation uses placeholders such as:
 - `?` for a context-specific row supplied by the formatting routine
  
 This allows formulas to adjust automatically when the engine inserts headers, footers, nested groups, and subtotal rows.
-``` 
 For example:
-
-SUM(J@:J#)
-
+ 
+`SUM(J@:J#)`
+ 
 If a detail block begins at row 18 and ends at row 35, the engine converts the expression to:
+ 
+`SUM(J18:J35)`
 
-SUM(J18:J35)
-```
 For complete field definitions, accepted values, formula tokens, worksheet-zone diagrams, and examples, see the [Metadata Configuration Guide](MetadataConfigurationGuide.md).
 
 ## 8. Excel Rendering Engine (fn_applyFormat)
