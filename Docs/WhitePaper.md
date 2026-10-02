@@ -119,11 +119,81 @@ Apply spacing rules
 
 Maintain group hierarchy
 
-## 7. Metadata Configuration Reference
+## 7. Metadata Formatting and Configuration
  
-Detailed field definitions, accepted values, worksheet-zone diagrams,
-formula placeholders, and worked examples are provided in the
-MetadataConfigurationGuide.md.
+Excel layout and formatting are controlled primarily through two metadata tables:
+ 
+### tblGoodFieldName_Report
+ 
+`tblGoodFieldName_Report` defines the worksheet-level presentation rules for each report and tab. Each record generally represents an Excel column and contains the metadata used to format and populate that column.
+ 
+The table controls:
+ 
+- Excel column letters, widths, visibility, and processing order
+- Primary group headers
+- Column headings
+- Detail-row formatting
+- Primary subtotal rows
+- Secondary and nested footer panels
+- Fonts, styles, sizes, colors, and underlining
+- Horizontal and vertical alignment
+- Number and date formats
+- Cell background colors
+- Row heights
+- Borders and line weights
+- Merged cells
+- Static labels and values copied from report data
+- Metadata-driven Excel formulas
+- Hidden helper columns used for intermediate calculations
+ 
+The table divides each report block into several logical zones:
+ 
+- **H1**: Primary group header
+- **B**: Body or column-heading row
+- **B_D**: Detail-data region
+- **F1**: Primary subtotal or summary row
+- **F2**: Secondary or nested footer panel
+ 
+Fields sharing these suffixes control the corresponding worksheet zone. For example, `Font_Color_H1_A` affects the primary header, while `Font_Color_F2_A` affects the secondary footer panel.
+ 
+### tblGoodFieldName_G_Totals
+ 
+`tblGoodFieldName_G_Totals` contains metadata used for grand-total presentation and calculations.
+ 
+This table controls report-level summary behavior that occurs after individual groups and nested blocks have been processed. Depending on the report configuration, it may define:
+ 
+- Grand-total labels
+- Grand-total formulas
+- Summary formatting
+- Number formats
+- Fonts and colors
+- Borders and line weights
+- Final report-level calculations
+ 
+Grand totals are separate from ordinary F1 and F2 subtotals because they summarize the completed report rather than an individual grouping block.
+ 
+### Formula Placeholders
+ 
+Some metadata fields accept Excel formula expressions containing placeholders that the rendering engine replaces with calculated worksheet row numbers.
+ 
+The current implementation uses placeholders such as:
+ 
+- `@` for a calculated beginning row
+- `#` for a calculated ending row
+- `?` for a context-specific row supplied by the formatting routine
+ 
+This allows formulas to adjust automatically when the engine inserts headers, footers, nested groups, and subtotal rows.
+ 
+For example:
+ 
+```text
+SUM(J@:J#)
+```
+If a detail block begins at row 18 and ends at row 35, the engine converts the expression to:
+```
+SUM(J18:J35)
+```
+For complete field definitions, accepted values, formula tokens, worksheet-zone diagrams, and examples, see the [Metadata Configuration Guide](MetadataConfigurationGuide.md).
 
 ## 8. Excel Rendering Engine (fn_applyFormat)
 The rendering engine applies metadata to produce the final Excel workbook.
