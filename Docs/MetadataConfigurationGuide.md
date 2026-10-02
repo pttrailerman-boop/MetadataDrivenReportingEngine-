@@ -370,9 +370,9 @@ When grand totals are enabled, the engine creates a final synthetic grouping rec
 | Field | Access type | Purpose | Example |
 |---|---|---|---|
 | `ID` | AutoNumber | Primary key | Automatically assigned |
-| `PasteSpecial` | Yes/No | Grand-total workbook-control flag | `No` |
-| `PasswordProtect` | Yes/No | Enables protection behavior | `No` |
-| `Password` | Short Text 50 | Password when protection is enabled | Blank |
+| `PasteSpecial` | Yes/No | Intended to replace formulas with their calculated values | `No` |
+| `PasswordProtect` | Yes/No | Enables password protection | `No` |
+| `Password` | Short Text 50 | Password used when protection is enabled | Blank |
 
 ### Exact core field types
 
