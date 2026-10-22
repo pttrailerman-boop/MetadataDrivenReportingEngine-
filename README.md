@@ -67,8 +67,23 @@ The host application and reporting engine are intentionally separated.
 6. The engine executes the configured SQL sequence, creates worksheets, transfers recordsets, calculates report bands, applies metadata, creates charts, and saves the workbook.
 7. The launcher displays a hyperlink to the completed file.
 
-KPI Report Manager
+## Demo Screenshots
+
+### KPI Report Manager
+
 Screenshots/KPI_ReportManager.png
+
+### KPI Reporting Workflow
+
+Screenshots/KPI_ReportWorkflow.png
+
+### Medicare Report Manager
+
+Screenshots/Medicare_ReportManager.png
+
+### Medicare Reporting Workflow
+
+Screenshots/Medicare_ReportWorkflow.png
 
 
 ## Architecture
