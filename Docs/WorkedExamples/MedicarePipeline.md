@@ -741,21 +741,6 @@ Rename production table to backup name
     -> run full-volume validation
 ```
 
-
-
-Recommended loop:
-
-```text
-Run test-source SQL
-    -> build test final output
-    -> build test sorting table
-    -> render workbook
-    -> inspect every band
-    -> correct SQL or metadata
-    -> repeat
-    -> restore full source
-```
-
 ## 21. What This Example Demonstrates
 
 The Medicare pipeline shows that the reporting engine separates five concerns:
