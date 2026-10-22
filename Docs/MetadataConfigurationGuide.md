@@ -41,8 +41,9 @@ tblGoodFieldName_Header
 
 tblGoodFieldName_Report H1
     -> rendered once for every grouped report band
+```
 
-## 1. Before Editing Metadata
+## 2. Before Editing Metadata
 
 Metadata in this project behaves like executable configuration. A small change can affect the physical Excel layout, formula placement, inserted rows, merged ranges, or the visible boundaries of a report section.
 
@@ -59,7 +60,7 @@ Use this workflow when creating or changing a report:
 
 Do not begin by populating every metadata field. Start with the minimum required column definitions, then add headers, formulas, footers, and shared formatting in stages.
 
-## 2. Report-Band Anatomy
+## 3. Report-Band Anatomy
 
 A standard generated report band contains five logical zones:
 
@@ -95,11 +96,11 @@ A simplified band looks like this:
 
 The physical row numbers are calculated at runtime from the sorting tables, record counts, default band allocations, and any valid header or footer overrides.
 
-## 3. Metadata Has Two Dimensions
+## 4. Metadata Has Two Dimensions
 
 A metadata record usually corresponds to an Excel column, but not every metadata field is column-specific. The table must be read in two dimensions.
 
-### 3.1 Vertical dimension: one record per Excel column
+### 4.1 Vertical dimension: one record per Excel column
 
 The `Letter` field identifies the destination Excel column. Many settings are processed separately for each metadata record.
 
@@ -122,7 +123,7 @@ Metadata row for L -> configure Excel column L
 Metadata row for M -> configure Excel column M
 ```
 
-### 3.2 Horizontal dimension: one value controls a report section
+### 4.2 Horizontal dimension: one value controls a report section
 
 Some settings describe an entire H1, F2, body boundary, or other range spanning multiple Excel columns.
 
@@ -141,7 +142,7 @@ The visible boundaries and the authoritative settings record are related but not
 
 The safest practice is to make the first sorted metadata record a visible column and place section-wide settings there.
 
-### 3.3 Metadata behavior classes
+### 4.3 Metadata behavior classes
 
 This guide uses four behavior labels:
 
@@ -159,7 +160,7 @@ S  Merge_Center_H1, ColorIndex_H1, H1 and F2 border settings
 U  List_B, ErrorTitle_B, ErrorMessage_B, Lock_B
 ```
 
-## 4. Core Identification and Column Fields
+## 5. Core Identification and Column Fields
 
 Each metadata record requires enough information to associate the record with a report, worksheet, processing order, and Excel destination.
 
@@ -202,13 +203,13 @@ Each metadata record requires enough information to associate the record with a 
 - **Recommended use:** Hide helper columns with `Column_Hide` rather than setting the width to zero.
 - **Important:** Hidden columns are excluded when the renderer calculates the visible left and right boundaries of section-wide ranges.
 
-## 5. Common Accepted Values
+## 6. Common Accepted Values
 
-### 5.1 Yes/No fields
+### 6.1 Yes/No fields
 
 Use the Access Yes/No data type and checkbox values. Do not store the words `Yes` and `No` in text fields unless the schema explicitly requires text.
 
-### 5.2 Horizontal alignment
+### 6.2 Horizontal alignment
 
 Common supported values are:
 
@@ -216,7 +217,7 @@ Common supported values are:
 - `Center`
 - `Right`
 
-### 5.3 Vertical alignment
+### 6.3 Vertical alignment
 
 Common supported values are:
 
@@ -224,7 +225,7 @@ Common supported values are:
 - `Center`
 - `Bottom`
 
-### 5.4 Line weight
+### 6.4 Line weight
 
 Common supported values are:
 
@@ -232,7 +233,7 @@ Common supported values are:
 - `Medium`
 - `Thick`
 
-### 5.5 Font styles
+### 6.5 Font styles
 
 Common supported values are:
 
@@ -241,7 +242,7 @@ Common supported values are:
 - `Italic`
 - `Bold Italic`
 
-### 5.6 Colors
+### 6.6 Colors
 
 Colors explicitly handled in current formatting branches include:
 
@@ -256,7 +257,7 @@ Colors explicitly handled in current formatting branches include:
 
 Unsupported text values generally fall into a default branch. Verify every new color against the current VBA before relying on it.
 
-### 5.7 Excel number formats
+### 6.7 Excel number formats
 
 Format metadata is passed to Excel's `NumberFormat` property. Examples include:
 
@@ -271,7 +272,7 @@ m/d/yyyy
 
 Test custom formats in the generated workbook because Access stores the format as text while Excel interprets the final pattern.
 
-## 6. H1 Primary Header Metadata
+## 7. H1 Primary Header Metadata
 
 The H1 zone provides the primary header for each report band.
 
@@ -280,7 +281,7 @@ H1 contains two types of behavior:
 1. Repeatable label/value items, evaluated from individual metadata records
 2. Section-wide styling and merge behavior, usually controlled by the first sorted metadata record
 
-### 6.1 Repeatable H1 item fields
+### 7.1 Repeatable H1 item fields
 
 #### `HeaderCol_H1_A`
 
@@ -332,7 +333,7 @@ The `_H1_AD` fields format the value copied from report data:
 - `Wrap_Text_H1_AD`
 - `Underline_H1_AD`
 
-### 6.2 Section-wide H1 fields
+### 7.2 Section-wide H1 fields
 
 The following fields should be treated as section-wide and configured on the first sorted metadata record:
 
@@ -358,7 +359,7 @@ The following fields should be treated as section-wide and configured on the fir
 
 These settings apply to an H1 range bounded by the first and last visible Excel columns. Place the intended values on the first sorted metadata record.
 
-## 7. B Column-Heading Metadata
+## 7.3 B Column-Heading Metadata
 
 The B zone is the column-heading row immediately above the detail data.
 
