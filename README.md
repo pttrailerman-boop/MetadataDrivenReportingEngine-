@@ -1,305 +1,441 @@
-# README.md — MetadataDrivenReportingEngine
-A fully synthetic, metadata‑driven reporting engine demonstrating the architectural patterns I use in enterprise reporting systems. All tables, fields, logic, and workflows in this demo are fictional and do not correspond to any real system.
+# Metadata-Driven Excel Reporting Engine
 
-## 📌 Overview
-The MetadataDrivenReportingEngine is a lightweight hybrid reporting framework built using Microsoft Access (VBA/DAO/ADO) and SQL Server. It demonstrates how operational teams can structure reporting workflows, apply metadata‑driven transformations, and generate KPI dashboards and Excel reports.
+A Microsoft Access reporting framework that turns ordered SQL, report metadata, sorting tables, and Excel COM automation into structured `.xlsx` workbooks.
 
-This demo intentionally uses sample data only.
-No live SQL queries are executed.
+This repository demonstrates a practical reporting architecture for recurring business reports that need more than a flat data export but do not require a specialized financial, scientific, or engineering reporting platform. The engine separates application-specific data preparation from reusable workbook construction, making it possible to generate grouped report bands, formulas, subtotals, grand totals, hidden helper columns, and charts from metadata.
 
-The Report Manager form displays pre‑loaded sample data and a locked date range. The Get Data button simply shows an instructional message explaining that this is a demo. The actual reporting workflow is launched through the chart icon, which opens the KPI launcher form.
+## What This Project Demonstrates
 
-## 🛠️64‑bit Office Compatibility
-This Access application is fully compatible with 32‑bit and 64‑bit Microsoft Office.
-If you are running Office 64‑bit, you may need to unblock the .accdb file after downloading.
+- Microsoft Access SQL pipelines controlled by metadata
+- DAO QueryDef creation and action-query execution
+- ADO recordset transfer into Excel
+- Excel COM automation from VBA
+- Multiple worksheets from one report definition
+- Dynamic report bands based on sorting and grouping tables
+- Metadata-generated formulas, formatting, headers, footers, subtotals, and grand totals
+- Hidden helper columns and running calculations
+- Programmatically generated charts
+- Standalone `.xlsx` output without Access reports
 
-## Why this matters
-Access uses Windows API calls for file dialogs (Open/Save).
-Office 64‑bit requires updated PtrSafe and LongPtr declarations.
-These updates have already been applied to this project.
+## Reference Implementations
 
-## How to unblock the file
-After downloading the .accdb file:
+The repository contains two complementary demonstrations.
 
-Right‑click the file
+### Medicare Demo
 
-Select Properties
+The Medicare demo is the current reference implementation. It uses public CMS Medicare Physician and Other Practitioners data and the CMS Restructured BETOS Classification System taxonomy to build a Texas provider summary.
 
-If you see an Unblock checkbox, check it
+The pipeline:
 
-Click Apply
+1. Imports the Medicare practitioner dataset and RBCS taxonomy.
+2. Normalizes taxonomy values and selects the current RBCS release per HCPCS code.
+3. Joins Medicare records to the current taxonomy.
+4. Filters the source to Texas.
+5. Groups activity by provider type, place of service, RBCS category, and RBCS subcategory.
+6. Calculates estimated submitted charges, allowed amounts, and Medicare payments.
+7. Produces a report-ready Access source and sorting table.
+8. Passes the prepared output to the metadata-driven Excel renderer.
+9. Generates a formatted worksheet and Medicare Top 10 chart.
 
-Open the file normally
+The current Medicare renderer also includes safer header and footer override handling and forces a complete Excel recalculation before saving the workbook.
 
-This removes the Windows “internet zone” flag that prevents Access from running VBA code.
+### KPI Demo
 
-## If the Unblock checkbox does not appear
-Use one of the following:
+The KPI demo is an earlier reference implementation retained because it demonstrates broader workbook orchestration:
 
-Move the file into a Trusted Location  
-(Access → Options → Trust Center → Trusted Locations)
+- Two report worksheets: `KPI_Monthly` and `KPI_Special`
+- Two chart worksheets
+- Dynamically sized monthly report bands
+- Default blank header and footer override behavior
+- Hidden calculated helper columns
+- Footer running counts
+- Worksheet-level grand totals
+- Multiple formula-token patterns
+- Broader `tblReportSequence` orchestration
 
-Or run this PowerShell command:
+The prepared object named `qryKPI_Results` is a local Access table despite its query-style prefix. Saved select queries divide the prepared source into Monthly and Special result sets before `tblReportSequence` materializes the demonstrated worksheet-source and sorting tables.
 
-Code
-Unblock-File "C:\Path\To\YourFile.accdb"
-Or extract the ZIP using 7‑Zip, which removes the zone identifier
+## User Workflow
 
-Once unblocked, the application will run on:
+The host application and reporting engine are intentionally separated.
 
-Access 32‑bit
+1. `frmReportManager` displays prepared, application-specific data.
+2. The user opens `frmReportLauncher`.
+3. The user selects a report definition.
+4. The optional **Render Sheet?** setting controls whether Excel remains visible while the workbook is built.
+5. The user selects **Create Spreadsheets**.
+6. The engine executes the configured SQL sequence, creates worksheets, transfers recordsets, calculates report bands, applies metadata, creates charts, and saves the workbook.
+7. The launcher displays a hyperlink to the completed file.
 
-Access 64‑bit
+Suggested screenshots:
 
-Access Runtime
+- `Screenshots/KPI_ReportManager.png`
+- `Screenshots/KPI_ReportWorkflow.png`
+- `Screenshots/Medicare_ReportManager.png`
+- `Screenshots/Medicare_ReportWorkflow.png`
 
-Windows 10/11
+## Architecture
 
-No additional configuration is required.
-
-## Windows Security Note
-Windows may block the Access file because it contains VBA code.
-
-To unblock:
-
-Right‑click the downloaded file
-
-Select Properties
-
-Check Unblock
-
-Click OK
-
-This is a standard Windows security feature.
-
-## This project showcases:
-metadata‑driven report definitions
-
-hybrid Access + SQL workflow patterns
-
-operational KPI extraction
-
-Excel automation via VBA
-
-separation of data retrieval and visualization
-
-## 🧩 Architecture summary
-### 1. Report Manager (frmReportManager)
-This form is a static preview of a reporting UI. It displays:
-A locked date range (non‑interactive)
-A grid of pre‑loaded sample data
-A Get Data button that shows the instructional message:
-
-“Done retrieving data, please review your results. (This is sample data, no data actually retrieved. Use this button to run your custom query logic.)”
-
-A chart icon that launches the reporting workflow
-The Report Manager does not retrieve or process data.
-The real reporting engine begins when the user clicks the chart icon, which opens frmReportLauncher.
-
-### 2. Charting module (frmReportLauncher)
-This is the functional core of the demo.
-The launcher form provides:
-A dropdown to select a report definition
-A checkbox labeled Render Sheet?
-A button to generate Excel output
-
-Render Sheet? behavior:
-Unchecked:
-The engine builds the Excel workbook without rendering the sheet to the screen.
-Typical runtime: around 2 minutes (varies by machine).
-
-Checked:
-The engine renders the sheet visibly while building it.
-Typical runtime: around 5 minutes (varies by machine).
-Useful for demonstration or debugging.
-
-The charting module uses metadata stored inside ReportKPI.accdb to produce:
-
-KPI charts
-Excel dashboards
-summary sheets
-
-This is where the reporting engine actually runs.
-
-### 3. Metadata tables (inside Access)
-All metadata lives inside ReportKPI.accdb, including:
-
-report definitions
-column mappings
-KPI formulas
-chart configuration
-sheet layout metadata
-
-No external metadata files are required.
-
-### 4. VBA modules (sanitized)
-All modules are exported as .txt files for easy viewing.
-These modules contain generic workflow logic and do not reference any real systems.
-
-Included modules:
-
-basBrowse.txt — file browsing utilities
-
-clsCreateRecord.txt — record creation and querydef lifecycle
-
-clsExport.txt — Excel export and formatting logic
-
-Connections.txt — ADO/DAO connection helpers
-
-modOpenFile.txt — file opening utilities
-
-modMousePointer.txt — UI pointer state management
-
-modExportToExcel.txt — Excel automation pipeline
-
-modCreateQueryDef.txt — querydef creation and cleanup
-
-mod_IsReportOpen.txt — report/form state checks
-
-These modules demonstrate clean separation of responsibilities and a metadata‑driven workflow.
-
-
-## 📁 Repository structure
+```text
+Host application
+    |
+    | parameters and source-specific preparation
+    v
+Report-ready Access source
+    |
+    | ordered instructions in tblReportSequence
+    v
+SQL and QueryDef orchestration
+    |
+    | final worksheet sources + sorting tables
+    v
+ADO recordset transfer to Excel
+    |
+    | calculated break coordinates
+    v
+Metadata-driven formatting and formulas
+    |
+    | charts, totals, recalculation, save
+    v
+Standalone XLSX workbook
 ```
+
+### Layer 1: Host Application
+
+The host application owns source-specific behavior:
+
+- User parameters
+- Data retrieval
+- Application-specific joins and calculations
+- Preparation of report-ready records
+- Preview of the prepared result
+
+In the public demos, the **Get Data** button is instructional and the sample data is already prepared. A production host application can replace this event with its own retrieval and SQL pipeline.
+
+### Layer 2: Report Orchestrator
+
+`frmReportLauncher` reads `tblReportSequence`, clears disposable output tables, creates or replaces QueryDefs, builds the worksheet and spacing views, and passes the resulting execution contract to `createSpreadsheetReport`.
+
+### Layer 3: Workbook Generator
+
+`modExportToExcel` and `clsExport` perform the reusable workbook work:
+
+- Create or replace the output workbook
+- Create and name worksheets
+- Open configured sources through ADO
+- Copy returned records beginning at cell `A2`
+- Calculate grouping breaks
+- Insert report-band rows
+- Apply formatting metadata
+- Generate formulas and totals
+- Hide helper columns
+- Create charts
+- Save a standalone `.xlsx` file
+
+## `tblReportSequence`: The Execution Manifest
+
+`tblReportSequence` is more than a settings table. It is the ordered execution manifest for a report.
+
+Important fields include:
+
+- `Report`: identifies the workbook/report definition
+- `Sort`: establishes execution order
+- `QueryName`: names the table or QueryDef associated with the row
+- `SQL`: stores Access SQL used to create the QueryDef or execute an action
+- `Exec`: determines whether the created QueryDef is executed
+- `isTable?`: selects the table-cleanup path instead of the QueryDef-creation path
+- `FinalOutput`: identifies objects copied into worksheets
+- `Tab`: identifies a worksheet source and worksheet name
+- `Tab Order`: controls worksheet processing order
+- `Spacing`: associates a sorting/grouping object with a worksheet
+- `Spacing Order`: controls grouping-level order
+- `HasTotals`: enables report-level grand totals
+- `Over_ride_head1`: optionally changes the primary header allocation
+- `Over_ride_foot1`: optionally changes the primary footer allocation
+
+### Table and QueryDef Lifecycle
+
+The engine uses two preparation routes:
+
+```text
+isTable? = True
+    -> treat QueryName as a disposable output/cache table
+    -> delete the existing table before recreation
+
+isTable? = False
+    -> treat QueryName as a QueryDef
+    -> delete and recreate the QueryDef
+    -> execute it only when Exec = True
+```
+
+During final worksheet transfer, ADO opens the configured `QueryName` and copies the returned recordset into Excel. The demonstrated configurations use materialized local tables as final worksheet sources. The implementation also supports creating a saved select QueryDef with `Exec = False`; because the transfer stage opens a named record-returning object through ADO, a saved select query can be used as a final source when it returns the required fields and has no unresolved parameters. This direct-query path is supported by the code but is not represented by the supplied demo configurations.
+
+## Sorting-Table Contract
+
+Each formatted worksheet requires one or more sorting/grouping sources. The primary sorting table must expose the fields expected by `fn_FindBreaks`.
+
+The first three columns are especially important:
+
+1. A numeric or sortable grouping key
+2. A display description for the group
+3. A record count for the group
+
+The engine reads the sorting tables, writes their names to `tblNameHolder`, and recursively calculates the physical coordinates of every report band. The generated `tbl_temp_sorting_grouping` table contains values such as:
+
+- Header beginning and ending rows
+- Detail beginning and ending rows
+- Summary beginning and ending rows
+- Inserted-row counts
+- Group description
+- Sorting level
+
+These coordinates drive all later formatting and formula placement.
+
+> **Important:** `fn_FindBreaks` depends on the expected sorting-table headers and column order. A table with the correct data but the wrong first three fields can produce incorrect grouping or fail during break calculation.
+
+## Metadata-Driven Excel Layout
+
+The active report metadata is stored primarily in:
+
+- `tblGoodFieldName_Report`
+- `tblGoodFieldName_G_Totals`
+
+Each ordinary report band contains several logical zones:
+
+```text
+H1   Primary group header
+B    Body or column-heading row
+B_D  Detail-data rows
+F1   Primary subtotal or summary row
+F2   Extended footer or additional summary rows
+```
+
+Metadata controls:
+
+- Destination Excel letters
+- Column widths and hidden columns
+- Labels and values copied from data
+- Fonts, sizes, styles, colors, and number formats
+- Alignment and wrapping
+- Row heights
+- Borders and fills
+- Merge behavior
+- Detail formulas
+- Footer formulas
+- Extended footer values
+- Grand-total formatting
+
+### Read Metadata in Two Dimensions
+
+A metadata record usually corresponds to an Excel output column, but not every field is column-specific.
+
+#### Column-specific settings
+
+These are normally evaluated once per metadata record:
+
+- `Letter`
+- `ColumnWidth`
+- `Column_Hide`
+- `FieldName_B`
+- Detail formatting fields
+- `Range_B_D`
+- `FieldName_F1`
+- `Range_F1`
+
+#### Repeatable header and footer items
+
+Multiple metadata records can define positioned label/data items:
+
+- `HeaderCol_H1_A`
+- `FieldName_H1_A`
+- `Add_Name_From_Data_H1_A`
+- `Position_H1_A`
+- `HeaderCol_F2_A`
+- `FieldName_F2_A`
+- `Add_Name_From_Data_F2_A`
+- `Position_F2_A`
+
+#### Section-wide settings
+
+Some properties apply to an entire multi-column report zone. The code determines the first and last visible Excel columns, constructs one range, then reads shared settings from the first metadata record in `Sort` order.
+
+Examples include:
+
+- `Merge_Center_H1`
+- `ColorIndex_H1`
+- `Row_Height_H1`
+- H1 border settings
+- `Merge_Center_F2`
+- `ColorIndex_F2`
+- `Row_Height_F2`
+- F2 border settings
+- Body and detail boundary settings
+
+Developers should treat the first sorted metadata record as the authoritative row for section-wide settings. Repeating or changing the same section-wide value on later records may have no effect.
+
+## Formula Tokens
+
+Formula metadata is stored without a leading equals sign because the VBA adds `=` when assigning the formula to Excel.
+
+### `?`
+
+`?` is replaced with a context-specific row number.
+
+Example detail formula:
+
+```text
+(L?-K?)/L?
+```
+
+### `@` and `#`
+
+For footer formulas:
+
+- `@` represents the first detail row in the current band.
+- `#` represents the last detail row in the current band.
+
+Example:
+
+```text
+SUM(K@:K#)
+```
+
+The engine converts the tokens into the actual Excel row coordinates for each generated band.
+
+## Active and Reserved Metadata Fields
+
+The schema contains fields that are not consumed by the current reference renderer. Their presence in a table does not activate the corresponding behavior.
+
+Currently unconfirmed or unimplemented fields include:
+
+- `PasteSpecial`
+- `PasswordProtect`
+- `Password`
+- `List_B`
+- `ErrorTitle_B`
+- `ErrorMessage_B`
+- `Lock_B`
+
+Treat these fields as reserved or legacy unless the current renderer is extended and tested to consume them.
+
+## Safe Header and Footer Overrides
+
+The renderer provides default allocations for primary and secondary headers and footers. `Over_ride_head1` and `Over_ride_foot1` allow a worksheet definition to replace the primary defaults.
+
+The current Medicare implementation applies an override only when the value is not null. A blank override therefore falls back safely to the default allocation rather than collapsing the report band.
+
+## Chart Generation
+
+The demonstrations use code-based charts rather than a fully generic chart-metadata subsystem.
+
+- The KPI renderer calls chart functions for worksheet charts and grand-total chart content.
+- The Medicare renderer creates a Top 10 chart from the completed worksheet data.
+
+Chart creation occurs after the worksheet sources, report bands, formulas, and totals have been prepared.
+
+## Repository Structure
+
+```text
 MetadataDrivenReportingEngine/
-│
-├── README.md
-│
-├── Docs/
-│   ├── WhitePaper.md
-│
-├── Screenshots/
-│   ├── ReportManager.png
-│   ├── KPIChartingForm.png
-│
-├── VBA/
-│   ├── basBrowse.txt
-│   ├── clsCreateRecord.txt
-│   ├── clsExport.txt
-│   ├── Connections.txt
-│   ├── modOpenFile.txt
-│   ├── modMousePointer.txt
-│   ├── modExportToExcel.txt
-│   ├── modCreateQueryDef.txt
-│   ├── mod_IsReportOpen.txt
-│
-└── Demo/
-    ├── DemoKPI_ExcelWriter.xlsx
-    └── ReportKPI.accdb
+|-- README.md
+|-- Docs/
+|   |-- WhitePaper.md
+|   |-- GettingStarted.md
+|   |-- MetadataConfigurationGuide.md
+|   |-- TblReportSequenceReference.md
+|   |-- Troubleshooting.md
+|   `-- WorkedExamples/
+|       |-- MedicarePipeline.md
+|       `-- KPIPipeline.md
+|-- Screenshots/
+|   |-- KPI_ReportManager.png
+|   |-- KPI_ReportWorkflow.png
+|   |-- Medicare_ReportManager.png
+|   `-- Medicare_ReportWorkflow.png
+|-- VBA/
+|   |-- basBrowse.txt
+|   |-- clsCreateRecord.txt
+|   |-- clsExport.txt
+|   |-- Connections.txt
+|   |-- modOpenFile.txt
+|   |-- modMousePointer.txt
+|   |-- modExportToExcel.txt
+|   |-- modCreateQdef.txt
+|   `-- mod_IsReportOpen.txt
+|-- SQL/
+|   |-- Medicare/
+|   `-- KPI/
+`-- Demo/
+    |-- DemoKPI_ExcelWriter.xlsx
+    |-- ReportKPI.accdb
+    `-- ReportMedicareDemo.accdb
 ```
 
-## 🚀 How to run the demo
-Download the repository file ReportKPI.accdb
-Open ReportKPI.accdb in Microsoft Access.
-Open frmReportManager.
-Review the pre‑loaded sample data and locked date range.
-Click Get Data to see the instructional message.
-Click the chart icon to open frmReportLauncher.
-Select a report from the dropdown.
-(Optional) Check Render Sheet? if you want to watch the sheet being drawn.
-Click Create Spreadsheets to generate Excel output.
-The resulting Excel file will resemble DemoKPI_ExcelWriter.xlsx.
+Adjust the repository tree as files are added. Paths in this README assume the structure above.
 
-### 📌 Report Output Location
-After the reporting engine finishes building your Excel workbook (which can take 2–3 minutes depending on your machine), the file is saved automatically to the folder you selected in the launcher form.  The launcher form (frmReportLauncher) will display a hyperlink to you Excel report. 
+## Running a Demo
 
-To avoid Access security warnings when clicking the hyperlink, you should add this folder as a Trusted Location in Access.
+1. Download the desired `.accdb` demo and place it in a local folder.
+2. Open the database in Microsoft Access.
+3. If Windows blocks the VBA project, unblock the downloaded file or place the demo in a trusted location.
+4. Open `frmReportManager`.
+5. Review the prepared sample records.
+6. Select **Open Charting**.
+7. Choose the report definition in `frmReportLauncher`.
+8. Optionally select **Render Sheet?** to watch Excel while the report is constructed.
+9. Select **Create Spreadsheets**.
+10. Choose an output filename and location.
+11. After processing completes, use the hyperlink displayed by the launcher to open the generated workbook.
 
-### 📌 Trusted Location Setup
-Access will warn you that hyperlinks may contain viruses unless the folder is trusted.
+## Windows and Office Notes
 
-To trust the folder:
+The project uses Windows APIs, Access, VBA, DAO, ADO, and Excel COM automation. The public demo code includes 64-bit-compatible declarations where required.
 
-Open Access
+A downloaded Access database may be blocked by Windows. If an **Unblock** option appears in the file properties, enable it before opening the database. A trusted folder may also be used for development and generated report output.
 
-Go to File → Options
+The demos require Microsoft Access and desktop Excel on Windows. The generated workbook is saved as a standalone `.xlsx` file and does not require Access to view after generation.
 
-Select Trust Center
+## Practical Testing Strategy
 
-Click Trust Center Settings
+Before testing a new report against a large dataset, use a controlled source with approximately 99 rows. This is large enough to exercise multiple report bands, formulas, subtotals, and row insertion while remaining small enough to inspect manually.
 
-Choose Trusted Locations
+Validate, in order:
 
-Click Add new location…
+1. Source field names and order
+2. Sorting-table headers and counts
+3. `tblReportSequence` order
+4. Worksheet and spacing associations
+5. Header and footer allocations
+6. Hidden helper columns
+7. Formula-token replacement
+8. Totals and grand totals
+9. Chart source ranges
+10. Workbook recalculation and saved values
 
-Browse to the folder where your reports are saved
+## Known Constraints
 
-Check “Subfolders of this location are also trusted”
+- The engine targets recurring business reports, not specialized financial, scientific, or engineering models.
+- Sorting tables must satisfy the expected contract.
+- Metadata is powerful but not self-validating.
+- Section-wide settings can be misleading if entered on non-authoritative metadata rows.
+- Some schema fields are reserved or unimplemented.
+- Parameterized final-output queries require parameters to be resolved before ADO opens the recordset.
+- Chart behavior is implementation-specific in the supplied demos.
+- Excel COM automation is Windows desktop technology and can be sensitive to workbook state, calculation mode, and orphaned Excel processes during debugging.
 
-Click OK
+## Why This Architecture Matters
 
-After this, Access will no longer show the security warning when you click the hyperlink.
+Many operational reports fall between two extremes:
 
-### 📌 Opening Your Report
-When the engine finishes:
+- A simple data export is not enough.
+- A specialized reporting platform is unnecessary or unavailable.
 
-The Excel workbook is saved automatically
+This engine addresses that middle ground. It keeps business-specific SQL and data preparation in Access while moving workbook layout, grouping, formulas, and formatting into reusable metadata and VBA components. The result is a practical reporting system that can be adapted without rewriting the entire Excel-generation pipeline for every report.
 
-Excel is closed automatically
+## About the Author
 
-The launcher form displays a hyperlink to the saved file
+Alex Fritts is a workflow and reporting automation developer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
 
-You can open the report in either of two ways:
+## Documentation Status
 
-Click the hyperlink on the form
-
-Or open File Explorer and navigate to the folder manually
-
-### 📌 Why This Matters
-The reporting engine performs a large amount of work:
-
-SQL transforms
-
-metadata-driven layout
-
-banding
-
-grouping
-
-formulas
-
-chart anchors
-
-sheet movement
-
-formatting
-
-Because the workbook takes time to construct, the engine always saves the file before closing Excel to ensure no work is lost.
-
-This guarantees:
-
-No prompts
-
-No accidental “Don’t Save” clicks
-
-No partial workbooks
-
-No corrupted output
-
-A consistent experience across all machines
-
-This demo is designed to show the workflow and architecture, not to retrieve real data.
-
-### 👤 About the author
-Alex Fritts is a workflow engineer specializing in:
-
-Access/VBA/COM automation
-SQL Server hybrid architectures
-metadata‑driven reporting systems
-operational KPI pipelines
-Excel automation and reporting engines
-
-He builds tools that help analysts, operators, and technical teams work faster and more reliably.
-
-### 🏭 Summary
-This demo showcases a metadata‑driven reporting engine similar to the architecture used in enterprise environments. It demonstrates how Access, SQL Server, and Excel can work together to produce parameterized KPI dashboards, structured reporting workflows, and automated spreadsheet generation. All data, tables, and logic are fully synthetic and safe for public review.
-
-### 🎯 Purpose
-This repository is intended as a professional demonstration of:
-
-SQL + Access hybrid engineering
-metadata‑driven reporting
-workflow automation
-enterprise reporting patterns
-
-It is not a production system and contains no proprietary data.
+This README is the project overview. The deeper architecture, configuration reference, worked pipelines, and troubleshooting guidance are being organized under `Docs/`.
