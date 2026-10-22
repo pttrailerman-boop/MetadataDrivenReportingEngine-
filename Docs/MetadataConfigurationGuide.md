@@ -57,6 +57,8 @@ When expanding the worksheet header, maintain this rule:
 ```text
 beginSheet > final worksheet-header row
 ```
+For complete field definitions and Medicare examples, see the [Report Header Metadata Reference](ReportHeaderReference.md).
+
 ## 2. Before Editing Metadata
 
 Metadata in this project behaves like executable configuration. A small change can affect the physical Excel layout, formula placement, inserted rows, merged ranges, or the visible boundaries of a report section.
@@ -900,6 +902,13 @@ Use this order when creating metadata for a new worksheet.
 
 Before accepting a configuration, verify:
 
+- [ ] Matching `tblGoodFieldName_Header` records exist for the report and worksheet.
+- [ ] Worksheet-header row numbers and merge ranges are valid.
+- [ ] Header formulas and hyperlinks render correctly.
+- [ ] `beginSheet` is at least 10 for the Medicare implementation.
+- [ ] `beginSheet` is greater than the final worksheet-header row.
+- [ ] The first generated report band begins below the worksheet header.
+- [ ] Freeze-below behavior uses the intended worksheet row.
 - [ ] `Report` matches the selected report definition.
 - [ ] `Tab` matches the worksheet mapping.
 - [ ] `Sort` values are unique and intentional.
