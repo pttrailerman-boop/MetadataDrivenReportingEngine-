@@ -502,6 +502,8 @@ Validate, in order:
 - Chart behavior is implementation-specific in the supplied demos.
 - Excel COM automation is Windows desktop technology and can be sensitive to workbook state, calculation mode, and orphaned Excel processes during debugging.
 
+Implementation note: The documentation describes the supplied Medicare and KPI reference implementations. Because the engine evolved over time, developers should verify configuration-sensitive behavior against the current VBA before adapting metadata fields that are not exercised by the demonstrations.
+
 ## Why This Architecture Matters
 
 Many operational reports fall between two extremes:
