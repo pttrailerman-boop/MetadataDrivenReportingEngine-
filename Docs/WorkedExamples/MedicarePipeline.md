@@ -740,6 +740,22 @@ Rename production table to backup name
     -> confirm production data
     -> run full-volume validation
 ```
+### Running the prepared test report
+
+The table-name exchange is a developer preparation step. The report user does not need to change queries, metadata, sorting tables, or `tblReportSequence`.
+
+After the 99-row test source has been activated, the report user only needs to:
+
+1. Open `frmReportLauncher`.
+2. Select whether to enable **Render Sheet?**.
+3. Select `Medicare_Report.XLSX` from the report list.
+4. Select **Create Spreadsheets**.
+5. Choose the output location and filename when prompted.
+6. Open the completed workbook from the hyperlink displayed by the launcher.
+
+The report engine then runs the configured SQL sequence, rebuilds the final worksheet source and sorting table, transfers the prepared records to Excel, constructs the report bands, applies metadata, creates totals and charts, recalculates the workbook, and saves the finished report.
+
+This separation is intentional: the developer prepares the data source and configuration, while the report user runs the completed workflow through the launcher.
 
 ## 21. What This Example Demonstrates
 
