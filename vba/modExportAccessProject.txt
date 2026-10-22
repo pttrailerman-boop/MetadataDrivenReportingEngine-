@@ -1,0 +1,754 @@
+Option Compare Database
+Option Explicit
+
+'==============================================================================
+' Access project source exporter
+'
+' Exports:
+'   Forms
+'   Reports
+'   Standard and class modules
+'   Macros
+'   Query SQL
+'   Full query definitions
+'   Table schemas
+'   Relationships
+'   Object inventory
+'
+' Does NOT export:
+'   Table data
+'   Query results
+'   Linked-table connection strings
+'   Query connection strings
+'==============================================================================
+
+Public Sub ExportAccessProject( _
+    Optional ByVal BaseFolder As String = vbNullString)
+
+    Dim db As DAO.Database
+    Dim ExportRoot As String
+    Dim DatabaseName As String
+    Dim TimeStamp As String
+    Dim InventoryFile As String
+    Dim ExportErrors As String
+
+    On Error GoTo ErrorHandler
+
+    Set db = CurrentDb()
+
+    DatabaseName = FileNameWithoutExtension(db.Name)
+    DatabaseName = CleanFileName(DatabaseName)
+
+    TimeStamp = Format$(Now(), "yyyymmdd_hhnnss")
+
+    If Len(Trim$(BaseFolder)) = 0 Then
+        BaseFolder = Environ$("USERPROFILE") & "\Desktop"
+    End If
+
+    RemoveTrailingSlash BaseFolder
+
+    ExportRoot = "C:\SD_KPI\ExportedKPI" & "\" & _
+                 DatabaseName & "_Export_" & TimeStamp
+
+    CreateExportFolders ExportRoot
+
+    InventoryFile = ExportRoot & "\Database\ObjectInventory.txt"
+
+    WriteInventoryHeader _
+        InventoryFile, _
+        db.Name, _
+        ExportRoot
+
+    ExportAccessObjects _
+        CurrentProject.AllForms, _
+        acForm, _
+        "FORM", _
+        ExportRoot & "\Forms", _
+        InventoryFile, _
+        ExportErrors
+
+    ExportAccessObjects _
+        CurrentProject.AllReports, _
+        acReport, _
+        "REPORT", _
+        ExportRoot & "\Reports", _
+        InventoryFile, _
+        ExportErrors
+
+    ExportAccessObjects _
+        CurrentProject.AllModules, _
+        acModule, _
+        "MODULE", _
+        ExportRoot & "\Modules", _
+        InventoryFile, _
+        ExportErrors
+
+    ExportAccessObjects _
+        CurrentProject.AllMacros, _
+        acMacro, _
+        "MACRO", _
+        ExportRoot & "\Macros", _
+        InventoryFile, _
+        ExportErrors
+
+    ExportQueries _
+        db, _
+        ExportRoot, _
+        InventoryFile, _
+        ExportErrors
+
+    ExportTableSchemas _
+        db, _
+        ExportRoot, _
+        InventoryFile, _
+        ExportErrors
+
+    ExportRelationships _
+        db, _
+        ExportRoot, _
+        ExportErrors
+
+    If Len(ExportErrors) > 0 Then
+
+        WriteTextFile _
+            ExportRoot & "\Database\ExportErrors.txt", _
+            ExportErrors
+
+        MsgBox _
+            "The Access project was exported, but some objects " & _
+            "reported errors." & vbCrLf & vbCrLf & _
+            "Export folder:" & vbCrLf & _
+            ExportRoot & vbCrLf & vbCrLf & _
+            "Review Database\ExportErrors.txt.", _
+            vbExclamation, _
+            "Export Completed with Warnings"
+
+    Else
+
+        MsgBox _
+            "The Access project was exported successfully." & _
+            vbCrLf & vbCrLf & _
+            ExportRoot, _
+            vbInformation, _
+            "Access Project Export"
+
+    End If
+
+ExitProcedure:
+
+    Set db = Nothing
+    Exit Sub
+
+ErrorHandler:
+
+    MsgBox _
+        "The Access project could not be exported." & _
+        vbCrLf & vbCrLf & _
+        "Error " & Err.Number & ": " & Err.Description & _
+        vbCrLf & vbCrLf & _
+        "Export folder:" & vbCrLf & _
+        ExportRoot, _
+        vbCritical, _
+        "Access Export Error"
+
+    Resume ExitProcedure
+
+End Sub
+
+'==============================================================================
+' Generic Access object export
+'==============================================================================
+
+Private Sub ExportAccessObjects( _
+    ByVal ObjectsCollection As Object, _
+    ByVal ObjectType As AcObjectType, _
+    ByVal ObjectLabel As String, _
+    ByVal DestinationFolder As String, _
+    ByVal InventoryFile As String, _
+    ByRef ExportErrors As String)
+
+    Dim obj As AccessObject
+    Dim DestinationFile As String
+
+    For Each obj In ObjectsCollection
+
+        DestinationFile = DestinationFolder & "\" & _
+                          CleanFileName(obj.Name) & ".txt"
+
+        If SaveObjectAsText( _
+            ObjectType, _
+            obj.Name, _
+            DestinationFile, _
+            ExportErrors) Then
+
+            AppendTextLine _
+                InventoryFile, _
+                ObjectLabel & vbTab & _
+                obj.Name & vbTab & _
+                DestinationFile
+
+        End If
+
+    Next obj
+
+End Sub
+
+Private Function SaveObjectAsText( _
+    ByVal ObjectType As AcObjectType, _
+    ByVal ObjectName As String, _
+    ByVal DestinationFile As String, _
+    ByRef ExportErrors As String) As Boolean
+
+    On Error GoTo ErrorHandler
+
+    Application.SaveAsText _
+        ObjectType, _
+        ObjectName, _
+        DestinationFile
+
+    SaveObjectAsText = True
+    Exit Function
+
+ErrorHandler:
+
+    SaveObjectAsText = False
+
+    ExportErrors = ExportErrors & _
+        "SaveAsText failed" & vbCrLf & _
+        "Object: " & ObjectName & vbCrLf & _
+        "File: " & DestinationFile & vbCrLf & _
+        "Error " & Err.Number & ": " & Err.Description & _
+        vbCrLf & String$(70, "-") & vbCrLf
+
+    Err.Clear
+
+End Function
+
+'==============================================================================
+' Query export
+'==============================================================================
+
+Private Sub ExportQueries( _
+    ByVal db As DAO.Database, _
+    ByVal ExportRoot As String, _
+    ByVal InventoryFile As String, _
+    ByRef ExportErrors As String)
+
+    Dim qdf As DAO.QueryDef
+    Dim SQLFile As String
+    Dim DefinitionFile As String
+    Dim QueryText As String
+
+    For Each qdf In db.QueryDefs
+
+        If Left$(qdf.Name, 1) <> "~" Then
+
+            On Error GoTo QueryError
+
+            SQLFile = ExportRoot & "\Queries\" & _
+                      CleanFileName(qdf.Name) & ".sql"
+
+            DefinitionFile = ExportRoot & "\QueryDefinitions\" & _
+                             CleanFileName(qdf.Name) & ".txt"
+
+            QueryText = "-- Query: " & qdf.Name & vbCrLf
+            QueryText = QueryText & _
+                        "-- DAO query type: " & _
+                        CStr(qdf.Type) & vbCrLf
+
+            If Len(Nz(qdf.Connect, vbNullString)) > 0 Then
+                QueryText = QueryText & _
+                            "-- External or pass-through query" & vbCrLf
+                QueryText = QueryText & _
+                            "-- Connection string intentionally omitted" & vbCrLf
+            End If
+
+            QueryText = QueryText & vbCrLf
+            QueryText = QueryText & qdf.SQL
+            QueryText = QueryText & vbCrLf
+
+            WriteTextFile SQLFile, QueryText
+
+            Application.SaveAsText _
+                acQuery, _
+                qdf.Name, _
+                DefinitionFile
+
+            AppendTextLine _
+                InventoryFile, _
+                "QUERY" & vbTab & _
+                qdf.Name & vbTab & _
+                SQLFile
+
+        End If
+
+NextQuery:
+
+        On Error GoTo 0
+
+    Next qdf
+
+    Exit Sub
+
+QueryError:
+
+    ExportErrors = ExportErrors & _
+        "Query export failed" & vbCrLf & _
+        "Query: " & qdf.Name & vbCrLf & _
+        "Error " & Err.Number & ": " & Err.Description & _
+        vbCrLf & String$(70, "-") & vbCrLf
+
+    Err.Clear
+    Resume NextQuery
+
+End Sub
+
+'==============================================================================
+' Table schema export
+'==============================================================================
+
+Private Sub ExportTableSchemas( _
+    ByVal db As DAO.Database, _
+    ByVal ExportRoot As String, _
+    ByVal InventoryFile As String, _
+    ByRef ExportErrors As String)
+
+    Dim tdf As DAO.TableDef
+    Dim fld As DAO.Field
+    Dim idx As DAO.Index
+    Dim IndexField As DAO.Field
+
+    Dim SchemaFile As String
+    Dim SchemaText As String
+    Dim IndexFields As String
+
+    For Each tdf In db.TableDefs
+
+        If Left$(tdf.Name, 4) <> "MSys" And _
+           Left$(tdf.Name, 1) <> "~" Then
+
+            On Error GoTo TableError
+
+            SchemaText = "TABLE: " & tdf.Name & vbCrLf
+            SchemaText = SchemaText & String$(78, "=") & vbCrLf
+
+            If Len(Nz(tdf.Connect, vbNullString)) > 0 Then
+
+                SchemaText = SchemaText & _
+                             "Table type: Linked" & vbCrLf
+
+                SchemaText = SchemaText & _
+                             "Source table: " & _
+                             Nz(tdf.SourceTableName, vbNullString) & vbCrLf
+
+                SchemaText = SchemaText & _
+                             "Connection string: intentionally omitted" & _
+                             vbCrLf
+
+            Else
+
+                SchemaText = SchemaText & _
+                             "Table type: Local" & vbCrLf
+
+            End If
+
+            SchemaText = SchemaText & _
+                         "Attributes: " & _
+                         CStr(tdf.Attributes) & vbCrLf & vbCrLf
+
+            SchemaText = SchemaText & "FIELDS" & vbCrLf
+            SchemaText = SchemaText & _
+                "Ordinal|Name|Type|Size|Required|" & _
+                "AllowZeroLength|DefaultValue" & vbCrLf
+
+            For Each fld In tdf.Fields
+
+                SchemaText = SchemaText & _
+                    CStr(fld.OrdinalPosition) & "|" & _
+                    fld.Name & "|" & _
+                    DaoFieldTypeName(fld.Type) & "|" & _
+                    CStr(fld.Size) & "|" & _
+                    GetPropertyText(fld, "Required") & "|" & _
+                    GetPropertyText(fld, "AllowZeroLength") & "|" & _
+                    GetPropertyText(fld, "DefaultValue") & _
+                    vbCrLf
+
+            Next fld
+
+            SchemaText = SchemaText & vbCrLf
+            SchemaText = SchemaText & "INDEXES" & vbCrLf
+
+            For Each idx In tdf.Indexes
+
+                IndexFields = vbNullString
+
+                For Each IndexField In idx.Fields
+
+                    If Len(IndexFields) > 0 Then
+                        IndexFields = IndexFields & ", "
+                    End If
+
+                    IndexFields = IndexFields & IndexField.Name
+
+                Next IndexField
+
+                SchemaText = SchemaText & idx.Name
+
+                If idx.Primary Then
+                    SchemaText = SchemaText & " [PRIMARY]"
+                End If
+
+                If idx.Unique Then
+                    SchemaText = SchemaText & " [UNIQUE]"
+                End If
+
+                SchemaText = SchemaText & ": " & _
+                             IndexFields & vbCrLf
+
+            Next idx
+
+            SchemaFile = ExportRoot & "\TableSchemas\" & _
+                         CleanFileName(tdf.Name) & ".txt"
+
+            WriteTextFile SchemaFile, SchemaText
+
+            AppendTextLine _
+                InventoryFile, _
+                "TABLE" & vbTab & _
+                tdf.Name & vbTab & _
+                SchemaFile
+
+        End If
+
+NextTable:
+
+        On Error GoTo 0
+
+    Next tdf
+
+    Exit Sub
+
+TableError:
+
+    ExportErrors = ExportErrors & _
+        "Table schema export failed" & vbCrLf & _
+        "Table: " & tdf.Name & vbCrLf & _
+        "Error " & Err.Number & ": " & Err.Description & _
+        vbCrLf & String$(70, "-") & vbCrLf
+
+    Err.Clear
+    Resume NextTable
+
+End Sub
+
+'==============================================================================
+' Relationship export
+'==============================================================================
+
+Private Sub ExportRelationships( _
+    ByVal db As DAO.Database, _
+    ByVal ExportRoot As String, _
+    ByRef ExportErrors As String)
+
+    Dim rel As DAO.Relation
+    Dim fld As DAO.Field
+    Dim RelationshipText As String
+
+    On Error GoTo ErrorHandler
+
+    RelationshipText = "DATABASE RELATIONSHIPS" & vbCrLf
+    RelationshipText = RelationshipText & _
+                       String$(78, "=") & vbCrLf & vbCrLf
+
+    For Each rel In db.Relations
+
+        If Left$(rel.Name, 4) <> "MSys" Then
+
+            RelationshipText = RelationshipText & _
+                               "Relation: " & rel.Name & vbCrLf
+
+            RelationshipText = RelationshipText & _
+                               "Primary table: " & _
+                               rel.Table & vbCrLf
+
+            RelationshipText = RelationshipText & _
+                               "Foreign table: " & _
+                               rel.ForeignTable & vbCrLf
+
+            RelationshipText = RelationshipText & _
+                               "Attributes: " & _
+                               CStr(rel.Attributes) & vbCrLf
+
+            For Each fld In rel.Fields
+
+                RelationshipText = RelationshipText & _
+                                   "  " & fld.Name & _
+                                   " -> " & _
+                                   fld.ForeignName & vbCrLf
+
+            Next fld
+
+            RelationshipText = RelationshipText & vbCrLf
+
+        End If
+
+    Next rel
+
+    WriteTextFile _
+        ExportRoot & "\Database\Relationships.txt", _
+        RelationshipText
+
+    Exit Sub
+
+ErrorHandler:
+
+    ExportErrors = ExportErrors & _
+        "Relationship export failed" & vbCrLf & _
+        "Error " & Err.Number & ": " & Err.Description & _
+        vbCrLf & String$(70, "-") & vbCrLf
+
+    Err.Clear
+
+End Sub
+
+'==============================================================================
+' Folder and file helpers
+'==============================================================================
+
+Private Sub CreateExportFolders(ByVal ExportRoot As String)
+
+    CreateFolderIfMissing ExportRoot
+    CreateFolderIfMissing ExportRoot & "\Forms"
+    CreateFolderIfMissing ExportRoot & "\Reports"
+    CreateFolderIfMissing ExportRoot & "\Modules"
+    CreateFolderIfMissing ExportRoot & "\Macros"
+    CreateFolderIfMissing ExportRoot & "\Queries"
+    CreateFolderIfMissing ExportRoot & "\QueryDefinitions"
+    CreateFolderIfMissing ExportRoot & "\TableSchemas"
+    CreateFolderIfMissing ExportRoot & "\Database"
+
+End Sub
+
+Private Sub CreateFolderIfMissing(ByVal FolderPath As String)
+
+    If Len(Dir$(FolderPath, vbDirectory)) = 0 Then
+        MkDir FolderPath
+    End If
+
+End Sub
+
+Private Sub WriteInventoryHeader( _
+    ByVal InventoryFile As String, _
+    ByVal DatabasePath As String, _
+    ByVal ExportRoot As String)
+
+    Dim InventoryText As String
+
+    InventoryText = "ACCESS PROJECT EXPORT" & vbCrLf
+    InventoryText = InventoryText & String$(78, "=") & vbCrLf
+    InventoryText = InventoryText & _
+                    "Database: " & DatabasePath & vbCrLf
+
+    InventoryText = InventoryText & _
+                    "Exported: " & _
+                    Format$(Now(), "yyyy-mm-dd hh:nn:ss") & vbCrLf
+
+    InventoryText = InventoryText & _
+                    "Export folder: " & ExportRoot & vbCrLf & vbCrLf
+
+    InventoryText = InventoryText & _
+                    "TYPE" & vbTab & _
+                    "OBJECT NAME" & vbTab & _
+                    "FILE" & vbCrLf
+
+    WriteTextFile InventoryFile, InventoryText
+
+End Sub
+
+Private Sub WriteTextFile( _
+    ByVal FilePath As String, _
+    ByVal FileText As String)
+
+    Dim FileNumber As Integer
+
+    FileNumber = FreeFile
+
+    Open FilePath For Output As #FileNumber
+    Print #FileNumber, FileText
+    Close #FileNumber
+
+End Sub
+
+Private Sub AppendTextLine( _
+    ByVal FilePath As String, _
+    ByVal LineText As String)
+
+    Dim FileNumber As Integer
+
+    FileNumber = FreeFile
+
+    Open FilePath For Append As #FileNumber
+    Print #FileNumber, LineText
+    Close #FileNumber
+
+End Sub
+
+'==============================================================================
+' Name and property helpers
+'==============================================================================
+
+Private Function FileNameWithoutExtension( _
+    ByVal FullPath As String) As String
+
+    Dim FileName As String
+    Dim SlashPosition As Long
+    Dim DotPosition As Long
+
+    SlashPosition = InStrRev(FullPath, "\")
+
+    If SlashPosition > 0 Then
+        FileName = Mid$(FullPath, SlashPosition + 1)
+    Else
+        FileName = FullPath
+    End If
+
+    DotPosition = InStrRev(FileName, ".")
+
+    If DotPosition > 0 Then
+        FileName = Left$(FileName, DotPosition - 1)
+    End If
+
+    FileNameWithoutExtension = FileName
+
+End Function
+
+Private Function CleanFileName( _
+    ByVal OriginalName As String) As String
+
+    Dim InvalidCharacters As Variant
+    Dim CharacterItem As Variant
+    Dim CleanName As String
+
+    InvalidCharacters = Array( _
+        "\", _
+        "/", _
+        ":", _
+        "*", _
+        "?", _
+        """", _
+        "<", _
+        ">", _
+        "|" _
+    )
+
+    CleanName = OriginalName
+
+    For Each CharacterItem In InvalidCharacters
+
+        CleanName = Replace$( _
+            CleanName, _
+            CStr(CharacterItem), _
+            "_" _
+        )
+
+    Next CharacterItem
+
+    Do While Right$(CleanName, 1) = "." Or _
+             Right$(CleanName, 1) = " "
+
+        CleanName = Left$(CleanName, Len(CleanName) - 1)
+
+    Loop
+
+    If Len(CleanName) = 0 Then
+        CleanName = "UnnamedObject"
+    End If
+
+    CleanFileName = CleanName
+
+End Function
+
+Private Sub RemoveTrailingSlash(ByRef FolderPath As String)
+
+    Do While Right$(FolderPath, 1) = "\" Or _
+             Right$(FolderPath, 1) = "/"
+
+        FolderPath = Left$(FolderPath, Len(FolderPath) - 1)
+
+    Loop
+
+End Sub
+
+Private Function GetPropertyText( _
+    ByVal SourceObject As Object, _
+    ByVal PropertyName As String) As String
+
+    On Error GoTo PropertyUnavailable
+
+    If IsNull(SourceObject.Properties(PropertyName).Value) Then
+        GetPropertyText = vbNullString
+    Else
+        GetPropertyText = _
+            CStr(SourceObject.Properties(PropertyName).Value)
+    End If
+
+    Exit Function
+
+PropertyUnavailable:
+
+    GetPropertyText = vbNullString
+    Err.Clear
+
+End Function
+
+Private Function DaoFieldTypeName( _
+    ByVal FieldType As Long) As String
+
+    Select Case FieldType
+
+        Case dbBoolean
+            DaoFieldTypeName = "Yes/No"
+
+        Case dbByte
+            DaoFieldTypeName = "Byte"
+
+        Case dbInteger
+            DaoFieldTypeName = "Integer"
+
+        Case dbLong
+            DaoFieldTypeName = "Long Integer"
+
+        Case dbSingle
+            DaoFieldTypeName = "Single"
+
+        Case dbDouble
+            DaoFieldTypeName = "Double"
+
+        Case dbCurrency
+            DaoFieldTypeName = "Currency"
+
+        Case dbDate
+            DaoFieldTypeName = "Date/Time"
+
+        Case dbText
+            DaoFieldTypeName = "Short Text"
+
+        Case dbMemo
+            DaoFieldTypeName = "Long Text"
+
+        Case dbLongBinary
+            DaoFieldTypeName = "Long Binary/OLE"
+
+        Case dbGUID
+            DaoFieldTypeName = "GUID"
+
+        Case dbDecimal
+            DaoFieldTypeName = "Decimal"
+
+        Case Else
+            DaoFieldTypeName = _
+                "DAO Type " & CStr(FieldType)
+
+    End Select
+
+End Function

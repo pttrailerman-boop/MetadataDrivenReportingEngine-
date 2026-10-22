@@ -1,4 +1,3 @@
-Attribute VB_Name = "modMousePointer"
 
 
 Function SetMousePointer_TSB(intPointer As Integer) As Boolean
@@ -67,5 +66,3 @@ Public Sub EnablePaint(ByRef frmName As Form, _
     End If
     
 End Sub
-
-

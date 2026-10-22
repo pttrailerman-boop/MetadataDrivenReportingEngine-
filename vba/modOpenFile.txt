@@ -1,4 +1,3 @@
-Attribute VB_Name = "modOpenFile"
 Option Compare Database
 Option Explicit
 
@@ -10,7 +9,7 @@ Option Explicit
   strInitialFile As String        ' Initial file name to populate the dialog with.
   strDialogTitle As String        ' Dialog title
   strDefaultExtension As String   ' Default extension to append to file if user didn't specify one.
-  lngFlags As Long                ' Flags (see constant list) to be used.
+  lngFlags As Long              ' Flags (see constant list) to be used.
   strFullPathReturned As String   ' Full path of file picked.
   strFileNameReturned As String   ' File name of file picked.
   intFileOffset As Integer        ' Offset in full path (strFullPathReturned) where the file name (strFileNameReturned) begins.
@@ -19,10 +18,10 @@ End Type
 
 Const ALLFILES = "All Files"
 
- Type TSBAPI_WINOPENFILENAME
+Type TSBAPI_WINOPENFILENAME
     lStructSize As Long
-    hWndOwner As Long
-    hInstance As Long
+    hWndOwner As LongPtr
+    hInstance As LongPtr
     lpstrFilter As String
     lpstrCustomFilter As String
     nMaxCustrFilter As Long
@@ -37,8 +36,8 @@ Const ALLFILES = "All Files"
     nFileOffset As Integer
     nFileExtension As Integer
     lpstrDefExt As String
-    lCustrData As Long
-    lpfnHook As Long
+    lCustrData As LongPtr
+    lpfnHook As LongPtr
     lpTemplateName As String
 End Type
 
@@ -57,16 +56,33 @@ Const OFN_PATHMUSTEXIST = &H800
 Const OFN_READONLY = &H1
 Const OFN_SHOWHELP = &H10
 
-Declare Function TSBAPI_GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" _
-  (pOpenfilename As TSBAPI_WINOPENFILENAME) _
-As Boolean
-  
-Declare Function TSBAPI_GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" _
-  (pOpenfilename As TSBAPI_WINOPENFILENAME) _
-As Boolean
-  
-Declare Sub TSBAPI_ChooseColor Lib "msaccess.exe" Alias "#53" _
-  (ByVal hWnd As Long, rgb As Long)
+
+
+#If VBA7 Then
+    '===== 64-bit compatible Common Dialog API =====
+    Declare PtrSafe Function TSBAPI_GetOpenFileName Lib "comdlg32.dll" _
+        Alias "GetOpenFileNameA" (pOpenfilename As TSBAPI_WINOPENFILENAME) _
+        As Boolean
+
+    Declare PtrSafe Function TSBAPI_GetSaveFileName Lib "comdlg32.dll" _
+        Alias "GetSaveFileNameA" (pOpenfilename As TSBAPI_WINOPENFILENAME) _
+        As Boolean
+
+    Declare PtrSafe Sub TSBAPI_ChooseColor Lib "msaccess.exe" _
+        Alias "#53" (ByVal hWnd As LongPtr, rgb As Long)
+#Else
+    '===== 32-bit fallback =====
+    Declare Function TSBAPI_GetOpenFileName Lib "comdlg32.dll" _
+        Alias "GetOpenFileNameA" _
+        (pOpenfilename As TSBAPI_WINOPENFILENAME) As Boolean
+
+    Declare Function TSBAPI_GetSaveFileName Lib "comdlg32.dll" _
+        Alias "GetSaveFileNameA" (pOpenfilename As TSBAPI_WINOPENFILENAME) _
+        As Boolean
+
+    Declare Sub TSBAPI_ChooseColor Lib "msaccess.exe" _
+        Alias "#53" (ByVal hWnd As Long, rgb As Long)
+#End If
 
 Function GetOpenFileEX_TSB(typOpenFile As TSBAPI_OPENFILE) As String
   ' Comments  : Extended file open routine
@@ -131,7 +147,7 @@ Sub ConvertTSB2Win(TSB_Struct As TSBAPI_OPENFILE, Win_Struct As TSBAPI_WINOPENFI
 
   Win_Struct.flags = TSB_Struct.lngFlags
 
-  Win_Struct.lStructSize = Len(Win_Struct)
+  Win_Struct.lStructSize = LenB(Win_Struct)
   
 PROC_EXIT:
   Exit Sub

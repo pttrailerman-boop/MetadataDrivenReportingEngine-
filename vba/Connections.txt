@@ -1,7 +1,6 @@
-Attribute VB_Name = "Connections"
 Option Compare Database
 Option Explicit
 
 Public cmd As New ADODB.Command
 Public conn As New ADODB.Connection
-Public rsa As New ADODB.recordSet
+Public rsa As New ADODB.Recordset

@@ -1,0 +1,523 @@
+Option Compare Database
+Option Explicit
+
+'==============================================================================
+' Exports selected metadata tables or queries into one Excel workbook.
+'
+' Each Access source object becomes one worksheet.
+'
+' No Excel reference is required because this uses late binding.
+'==============================================================================
+
+Public Sub ExportMedicareMetadata()
+
+    Const xlOpenXMLWorkbook As Long = 51
+    Const xlSheetVisible As Long = -1
+
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+
+    Dim objExcel As Object
+    Dim objWorkbook As Object
+    Dim objWorksheet As Object
+
+    Dim SourceObjects As Variant
+    Dim WorksheetNames As Variant
+
+    Dim OutputFolder As String
+    Dim OutputFile As String
+
+    Dim SourceName As String
+    Dim WorksheetName As String
+
+    Dim FieldIndex As Long
+    Dim ItemIndex As Long
+    Dim ExportedCount As Long
+    Dim MissingObjects As String
+
+    On Error GoTo ErrorHandler
+
+    Set db = CurrentDb()
+
+    '==========================================================================
+    ' CONFIGURATION
+    '
+    ' The first array contains the actual Access table or query names.
+    ' The second array contains the desired Excel worksheet names.
+    '
+    ' Edit the first array if your Access object names are different.
+    ' Keep the two arrays in corresponding order.
+    '==========================================================================
+
+    SourceObjects = Array( _
+        "tbl_temp_sorting_grouping", _
+        "tblGoodFieldName_G_Totals", _
+        "tblGoodFieldName_Header", _
+        "tblGoodFieldName_Report", _
+        "tblNameHolder", _
+        "tblReports", _
+        "tblReportSequence", _
+        "tblSort_MedicareFinal" _
+    )
+
+    WorksheetNames = Array( _
+        "tbl_temp_sorting_grouping", _
+        "tblGoodFieldName_G_Totals", _
+        "tblGoodFieldName_Header", _
+        "tblGoodFieldName_Report", _
+        "tblNameHolder", _
+        "tblReports", _
+        "tblReportSequence", _
+        "tblSort_MedicareFinal" _
+    )
+
+    '==========================================================================
+    ' Validate configuration
+    '==========================================================================
+
+    If UBound(SourceObjects) <> UBound(WorksheetNames) Then
+
+        Err.Raise _
+            vbObjectError + 3001, _
+            "ExportKPIMetadata", _
+            "The source-object and worksheet-name arrays " & _
+            "contain different numbers of items."
+
+    End If
+
+    '==========================================================================
+    ' Build output filename
+    '==========================================================================
+
+    OutputFolder = Environ$("USERPROFILE") & "\Desktop"
+    OutputFile = OutputFolder & "\KPI_Metadata_Current.xlsx"
+
+    If Len(Dir$(OutputFile)) > 0 Then
+        Kill OutputFile
+    End If
+
+    '==========================================================================
+    ' Start Excel
+    '==========================================================================
+
+    Set objExcel = CreateObject("Excel.Application")
+
+    With objExcel
+        .Visible = False
+        .DisplayAlerts = False
+        .ScreenUpdating = False
+    End With
+
+    Set objWorkbook = objExcel.Workbooks.Add
+
+    '==========================================================================
+    ' Export each metadata source
+    '==========================================================================
+
+    For ItemIndex = LBound(SourceObjects) To UBound(SourceObjects)
+
+        SourceName = CStr(SourceObjects(ItemIndex))
+        WorksheetName = CStr(WorksheetNames(ItemIndex))
+
+        If AccessObjectExists(SourceName, db) Then
+
+            Set rs = db.OpenRecordset( _
+                "SELECT * FROM [" & _
+                Replace(SourceName, "]", "]]") & _
+                "];", _
+                dbOpenSnapshot, _
+                dbReadOnly _
+            )
+
+            Set objWorksheet = objWorkbook.Worksheets.Add( _
+                After:=objWorkbook.Worksheets( _
+                    objWorkbook.Worksheets.Count))
+
+            objWorksheet.Name = CleanWorksheetName( _
+                WorksheetName, _
+                objWorkbook)
+
+            'Write the Access source name for reference.
+            objWorksheet.Range("A1").Value = _
+                "Access source: " & SourceName
+
+            'Write field names in row 3.
+            For FieldIndex = 0 To rs.Fields.Count - 1
+
+                objWorksheet.Cells(3, FieldIndex + 1).Value = _
+                    rs.Fields(FieldIndex).Name
+
+            Next FieldIndex
+
+            'Write table/query records beginning in row 4.
+            If Not rs.BOF And Not rs.EOF Then
+
+                objWorksheet.Range("A4").CopyFromRecordset rs
+
+            End If
+
+            FormatMetadataWorksheet _
+                objWorksheet, _
+                rs.Fields.Count
+
+            ExportedCount = ExportedCount + 1
+
+            rs.Close
+            Set rs = Nothing
+            Set objWorksheet = Nothing
+
+        Else
+
+            MissingObjects = MissingObjects & _
+                SourceName & vbCrLf
+
+        End If
+
+    Next ItemIndex
+
+    '==========================================================================
+    ' Remove the original blank Excel worksheets
+    '==========================================================================
+
+    DeleteUnusedWorksheets _
+        objWorkbook, _
+        WorksheetNames
+
+    If ExportedCount = 0 Then
+
+        Err.Raise _
+            vbObjectError + 3002, _
+            "ExportKPIMetadata", _
+            "None of the configured Access source objects were found."
+
+    End If
+
+    '==========================================================================
+    ' Save as a normal macro-free XLSX workbook
+    '==========================================================================
+
+    objWorkbook.SaveAs _
+        FileName:=OutputFile, _
+        FileFormat:=xlOpenXMLWorkbook
+
+    objWorkbook.Close SaveChanges:=False
+
+    objExcel.DisplayAlerts = True
+    objExcel.ScreenUpdating = True
+    objExcel.Quit
+
+    Set objWorkbook = Nothing
+    Set objExcel = Nothing
+    Set db = Nothing
+
+    If Len(MissingObjects) > 0 Then
+
+        MsgBox _
+            CStr(ExportedCount) & _
+            " metadata objects were exported to:" & _
+            vbCrLf & vbCrLf & _
+            OutputFile & _
+            vbCrLf & vbCrLf & _
+            "These configured objects were not found:" & _
+            vbCrLf & _
+            MissingObjects, _
+            vbExclamation, _
+            "Metadata Export Completed with Warnings"
+
+    Else
+
+        MsgBox _
+            "All metadata objects were exported successfully." & _
+            vbCrLf & vbCrLf & _
+            OutputFile, _
+            vbInformation, _
+            "KPI Metadata Export"
+
+    End If
+
+    Exit Sub
+
+ErrorHandler:
+
+    Dim ErrorNumber As Long
+    Dim ErrorDescription As String
+
+    ErrorNumber = Err.Number
+    ErrorDescription = Err.Description
+
+    On Error Resume Next
+
+    If Not rs Is Nothing Then
+        rs.Close
+    End If
+
+    If Not objWorkbook Is Nothing Then
+        objWorkbook.Close SaveChanges:=False
+    End If
+
+    If Not objExcel Is Nothing Then
+
+        objExcel.DisplayAlerts = True
+        objExcel.ScreenUpdating = True
+        objExcel.Quit
+
+    End If
+
+    Set rs = Nothing
+    Set objWorksheet = Nothing
+    Set objWorkbook = Nothing
+    Set objExcel = Nothing
+    Set db = Nothing
+
+    MsgBox _
+        "The KPI metadata workbook could not be created." & _
+        vbCrLf & vbCrLf & _
+        "Error " & ErrorNumber & ": " & _
+        ErrorDescription, _
+        vbCritical, _
+        "Metadata Export Error"
+
+End Sub
+
+'==============================================================================
+' Checks both tables and saved queries.
+'==============================================================================
+
+Private Function AccessObjectExists( _
+    ByVal ObjectName As String, _
+    ByVal db As DAO.Database) As Boolean
+
+    Dim tdf As DAO.TableDef
+    Dim qdf As DAO.QueryDef
+
+    On Error Resume Next
+
+    Set tdf = db.TableDefs(ObjectName)
+
+    If Err.Number = 0 Then
+
+        AccessObjectExists = True
+        Set tdf = Nothing
+        Exit Function
+
+    End If
+
+    Err.Clear
+
+    Set qdf = db.QueryDefs(ObjectName)
+
+    If Err.Number = 0 Then
+        AccessObjectExists = True
+    Else
+        AccessObjectExists = False
+    End If
+
+    Err.Clear
+
+    Set tdf = Nothing
+    Set qdf = Nothing
+
+    On Error GoTo 0
+
+End Function
+
+'==============================================================================
+' Basic worksheet formatting.
+'==============================================================================
+
+Private Sub FormatMetadataWorksheet( _
+    ByVal objWorksheet As Object, _
+    ByVal FieldCount As Long)
+
+    Dim LastColumn As Long
+
+    LastColumn = FieldCount
+
+    With objWorksheet
+
+        .Range("A1").Font.Bold = True
+        .Range("A1").Font.Color = rgb(89, 89, 89)
+
+        If LastColumn > 0 Then
+
+            With .Range( _
+                .Cells(3, 1), _
+                .Cells(3, LastColumn))
+
+                .Font.Bold = True
+                .Font.Color = rgb(255, 255, 255)
+                .Interior.Color = rgb(42, 111, 119)
+
+            End With
+
+        End If
+
+        .Rows(3).AutoFilter
+        .Rows(3).HorizontalAlignment = -4131
+
+        .Columns.AutoFit
+
+        LimitColumnWidths objWorksheet, FieldCount, 60
+
+        .Activate
+        .Range("A4").Select
+
+        objWorksheet.Application.ActiveWindow.FreezePanes = True
+
+        .Range("A1").Select
+
+    End With
+
+End Sub
+
+'==============================================================================
+' Prevents long SQL or description fields from producing extremely wide columns.
+'==============================================================================
+
+Private Sub LimitColumnWidths( _
+    ByVal objWorksheet As Object, _
+    ByVal FieldCount As Long, _
+    ByVal MaximumWidth As Double)
+
+    Dim ColumnIndex As Long
+
+    For ColumnIndex = 1 To FieldCount
+
+        If objWorksheet.Columns(ColumnIndex).ColumnWidth > _
+           MaximumWidth Then
+
+            objWorksheet.Columns(ColumnIndex).ColumnWidth = _
+                MaximumWidth
+
+            objWorksheet.Columns(ColumnIndex).WrapText = True
+
+        End If
+
+    Next ColumnIndex
+
+End Sub
+
+'==============================================================================
+' Removes only worksheets that were not created for exported metadata.
+'==============================================================================
+
+Private Sub DeleteUnusedWorksheets( _
+    ByVal objWorkbook As Object, _
+    ByVal RequiredWorksheetNames As Variant)
+
+    Dim objWorksheet As Object
+    Dim ItemIndex As Long
+    Dim KeepWorksheet As Boolean
+
+    For Each objWorksheet In objWorkbook.Worksheets
+
+        KeepWorksheet = False
+
+        For ItemIndex = LBound(RequiredWorksheetNames) To _
+                        UBound(RequiredWorksheetNames)
+
+            If StrComp( _
+                objWorksheet.Name, _
+                Left$(CStr(RequiredWorksheetNames(ItemIndex)), 31), _
+                vbTextCompare) = 0 Then
+
+                KeepWorksheet = True
+                Exit For
+
+            End If
+
+        Next ItemIndex
+
+        If Not KeepWorksheet Then
+
+            If objWorkbook.Worksheets.Count > 1 Then
+                objWorksheet.Delete
+            End If
+
+        End If
+
+    Next objWorksheet
+
+End Sub
+
+'==============================================================================
+' Makes worksheet names valid and unique.
+'==============================================================================
+
+Private Function CleanWorksheetName( _
+    ByVal RequestedName As String, _
+    ByVal objWorkbook As Object) As String
+
+    Dim InvalidCharacters As Variant
+    Dim CharacterItem As Variant
+    Dim BaseName As String
+    Dim CandidateName As String
+    Dim SequenceNumber As Long
+
+    InvalidCharacters = Array( _
+        "\", _
+        "/", _
+        ":", _
+        "*", _
+        "?", _
+        "[", _
+        "]" _
+    )
+
+    BaseName = Trim$(RequestedName)
+
+    For Each CharacterItem In InvalidCharacters
+
+        BaseName = Replace$( _
+            BaseName, _
+            CStr(CharacterItem), _
+            "_" _
+        )
+
+    Next CharacterItem
+
+    If Len(BaseName) = 0 Then
+        BaseName = "Metadata"
+    End If
+
+    BaseName = Left$(BaseName, 31)
+    CandidateName = BaseName
+    SequenceNumber = 1
+
+    Do While WorksheetExists(CandidateName, objWorkbook)
+
+        SequenceNumber = SequenceNumber + 1
+
+        CandidateName = Left$( _
+            BaseName, _
+            31 - Len(CStr(SequenceNumber)) - 1)
+
+        CandidateName = CandidateName & _
+                        "_" & _
+                        CStr(SequenceNumber)
+
+    Loop
+
+    CleanWorksheetName = CandidateName
+
+End Function
+
+Private Function WorksheetExists( _
+    ByVal WorksheetName As String, _
+    ByVal objWorkbook As Object) As Boolean
+
+    Dim objWorksheet As Object
+
+    On Error Resume Next
+
+    Set objWorksheet = _
+        objWorkbook.Worksheets(WorksheetName)
+
+    WorksheetExists = Not objWorksheet Is Nothing
+
+    Set objWorksheet = Nothing
+    Err.Clear
+
+    On Error GoTo 0
+
+End Function

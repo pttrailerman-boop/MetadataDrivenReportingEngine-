@@ -1,8 +1,3 @@
-VERSION 1.0 CLASS
-BEGIN
-  MultiUse = -1  'True
-END
-Attribute VB_Name = "clsExport"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -32,7 +27,7 @@ Private i_foot_1 As Integer
 Private i_foot_2 As Integer
 Private i_head_1 As Integer
 Private i_head_2 As Integer
-Private rsEditNums As dao.recordSet
+Private rsEditNums As DAO.Recordset
 
 Const head_1 = 5   'header - where i can put descriptions and data for PRIMARY SECTION
 Const foot_1 = 4 'includes extra space - where i can put descriptions and data for footer PRIMARY SECTION
@@ -134,12 +129,12 @@ Public Function OpenXL() As Boolean
   
   Dim db As Database
 
-  Dim rsGRR_Report As dao.recordSet
-  Dim rsgRR_Report_Desc As dao.recordSet
-  Dim rsSpacing As dao.recordSet
-  Dim rsTab  As dao.recordSet
-  Dim rsSpacingTab As dao.recordSet
-  Dim rsTableNameHolder As dao.recordSet
+  Dim rsGRR_Report As DAO.Recordset
+  Dim rsgRR_Report_Desc As DAO.Recordset
+  Dim rsSpacing As DAO.Recordset
+  Dim rsTab  As DAO.Recordset
+  Dim rsSpacingTab As DAO.Recordset
+  Dim rsTableNameHolder As DAO.Recordset
 
   Set db = DBEngine(0)(0)
     
@@ -278,20 +273,20 @@ If rsTab.RecordCount > 0 Then
                            Call fn_break(rsTableNameHolder![queryname])
                            Call fn_applyFormat(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, bHasTotals)
                            'Call fn_PivotChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
-                           Call fn_Header(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
+                           Call fn_CreateChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
                            Call fn_GrandTotalsOnChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
                     End If
                         'end find all breaks--------------------------------------------
                 rsTab.MoveNext
     Wend
     
-                        
-
-                        objExcel.Application.Sheets("Monthly_Chart").Select
-                        objExcel.Application.ActiveSheet.Move Before:=objExcel.Application.ActiveWorkbook.Sheets("KPI_Special")
+       
+                  'move the sheets around if you need to.
+                  'objExcel.Application.Sheets("Monthly_Chart").Select
+                  'objExcel.Application.ActiveSheet.Move Before:=objExcel.Application.ActiveWorkbook.Sheets("KPI_Special")
 
         
-        If prpRender = False Then
+        If prpRender = True Then
         
             objExcel.Application.ScreenUpdating = True
             objExcel.Application.DisplayAlerts = True
@@ -306,11 +301,11 @@ If rsTab.RecordCount > 0 Then
             'do nothing
         End If
         
-          [Forms]![frmReportLauncher]![txtFolderPathChart].Visible = True
-          [Forms]![frmReportLauncher]![txtFolderPathChart].Caption = xlsFileName
-          [Forms]![frmReportLauncher]![txtFolderPathChart].HyperlinkAddress = xlsFileName
+
+        objExcel.Application.DisplayAlerts = False
+        objExcel.ActiveWorkbook.Close SaveChanges:=True
+        objExcel.Application.Quit
         
-        objExcel.Workbooks.Close
         OpenXL = True
         
          If (rsa.State And adStateOpen) = adStateOpen Then
@@ -342,10 +337,10 @@ err_OpenXL:
      OpenXL = False
 
 End Function
-Function fn_applyFormat(ByRef rsGRReport As dao.recordSet, ByRef rsgRR_Report_Desc As dao.recordSet, ByRef rsStrTable As dao.recordSet, i As Long, bHasTotals As Boolean)
+Function fn_applyFormat(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, bHasTotals As Boolean)
 
 Dim intCol As Integer, x As Integer
-Dim rssortgroup As dao.recordSet
+Dim rssortgroup As DAO.Recordset
 Dim db As Database
 Dim bRk2 As String
 '----Grand Total Variables----
@@ -353,7 +348,7 @@ Dim rsCount As Long
 Dim slvl As String
 Dim lSumEnd As Long
 Dim lrow As Long
-Dim rsSortGroup_GT As dao.recordSet
+Dim rsSortGroup_GT As DAO.Recordset
 '----header variables 1-------
 Dim vAlignment, vAlignment_2 As Long
 Dim hAlignment, hAlignment_2 As Long
@@ -1864,7 +1859,7 @@ hEndLetter & (rssortgroup![Sum_End_1] - 1)
     End If
 
 End Function
-Private Function fn_FindBreaks(ByRef rsStrTable As dao.recordSet, ByRef strNameHolder As String, ByVal i As Integer) As Boolean
+Private Function fn_FindBreaks(ByRef rsStrTable As DAO.Recordset, ByRef strNameHolder As String, ByVal i As Integer) As Boolean
 
 Dim clsCreateRecord As New clsCreateRecord
 
@@ -1878,11 +1873,11 @@ Dim bkMark As Variant
 
 Dim db As Database
 
-Dim rs As dao.recordSet
-Dim rsTemp As dao.recordSet
-Dim rsCountSort As dao.recordSet
-Dim rsInnerCountSort As dao.recordSet
-Dim rsStrNameHolder As dao.recordSet
+Dim rs As DAO.Recordset
+Dim rsTemp As DAO.Recordset
+Dim rsCountSort As DAO.Recordset
+Dim rsInnerCountSort As DAO.Recordset
+Dim rsStrNameHolder As DAO.Recordset
 
 Dim eEnd As Integer
 Dim counter As Integer
@@ -2256,7 +2251,7 @@ err_fn_findbreaks:
 
 End Function
 Private Function fn_break(rptPrimary As String)
-Dim rs As dao.recordSet
+Dim rs As DAO.Recordset
 Dim db As Database
 Dim qOk As Boolean
 Dim strSQL As String
@@ -2324,132 +2319,16 @@ Let S = 0
 1     ColLet2Num = CN
 End Function
 
-Function fn_PivotChart(ByRef rsGRReport As dao.recordSet, ByRef rsgRR_Report_Desc As dao.recordSet, ByRef rsStrTable As dao.recordSet, i As Long, strTabName As String)
+Function fn_CreateChart(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, strTabName As String)
+'keep in mind that you can use prpSortingGrouping table and tab name and table name and be able to address all of your totals (or sub totals)
+'you already know the column layout of your report, but you you can easily calculate all the rows and make your charts dynamic - see ranges below
+'this should give you the flexibility of being able to really customize the chart for each sheet.  I think a generic chart rendering routine would not work as well, unless its
+'coupled with metadata tables.  in the case below i obviously used the excel macro recorder while buiding what i wanted for this chart
+'perhaps someone or AI can help build a metadata driven chart module for this project, but for now, i'm good with the semi hard coded method you see below.
 
-Dim db As Database
-Dim rssortgroup As dao.recordSet
-Dim hBeginLetter As String, hEndLetter As String
-Dim bRk2 As String, posAdd_H As Integer, brk3 As String, brk4 As String, brk5 As String
-Dim rng As String
-
-Set db = DBEngine(0)(0)
-
-rsStrTable.MoveFirst
-Set rssortgroup = db.OpenRecordset("Select * From " & prpSortingGrouping & " Where " & prpSortingGrouping & ".[Level] = " & """" & rsStrTable![queryname] & """", dbOpenDynaset)
-  
- 'get the range and all that jaz
-  rsGRReport.MoveFirst
- If rsGRReport![Tab] = "Metrics By Region Report" Then 'lets make these one off for now
-                 While rsGRReport.EOF = False
-                      If rsGRReport![Column_hide] = False Then
-                        hBeginLetter = rsGRReport![Letter]
-                        rsGRReport.MoveLast
-                       End If
-                    rsGRReport.MoveNext
-                Wend
-   
-    bRk2 = hBeginLetter & (rssortgroup![begin1]) - 1
-
-        rssortgroup.MoveLast
-        rsgRR_Report_Desc.MoveFirst
-    
-      While rsgRR_Report_Desc.EOF = False
-        If rsgRR_Report_Desc![Column_hide] = False Then
-            hEndLetter = rsgRR_Report_Desc![Letter]
-            rsgRR_Report_Desc.MoveLast
-        End If
-        rsgRR_Report_Desc.MoveNext
-    Wend
-    rssortgroup.MoveLast
-    brk3 = hEndLetter & (rssortgroup![End1])
-  
-    bRk2 = bRk2 & ":" & brk3
-    bRk2 = objExcel.ActiveSheet.Range(bRk2).Address(ReferenceStyle:=xlR1C1)
-    brk4 = hBeginLetter & rssortgroup![Sum_End_1] + 2 & ":" & hBeginLetter & rssortgroup![Sum_End_1] + 2
-    brk5 = hBeginLetter & rssortgroup![Sum_End_1] + 2 & ":" & hBeginLetter & rssortgroup![Sum_End_1] + 2
-    brk4 = objExcel.ActiveSheet.Range(brk4).Address(ReferenceStyle:=xlR1C1)
-
-'chart object
-
-        objExcel.Application.ActiveWorkbook.PivotCaches.Add(SourceType:=xlDatabase, SourceData:= _
-        strTabName & "!" & bRk2).CreatePivotTable TableDestination:= _
-        "'[" & prpJustFileName & "]" & strTabName & "'!" & brk4, TableName:= _
-        strTabName & "_PivotTable", DefaultVersion:=xlPivotTableVersion10
-    With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable")
-        .ColumnGrand = False
-        .HasAutoFormat = False
-        .RowGrand = False
-    End With
-    
-
-    objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").AddFields RowFields:="Metric", _
-        ColumnFields:=Array("Region", "Month / Year")
-    With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Review Score")
-        .Orientation = xlDataField
-        .Caption = "Sum of Review Score"
-        .Function = xlSum
-        .NumberFormat = "0%"
-    End With
-    objExcel.Application.ActiveWorkbook.Charts.Add
-    objExcel.Application.ActiveWorkbook.ActiveChart.Location WHERE:=xlLocationAsNewSheet
-    objExcel.Application.ActiveWorkbook.ActiveChart.Name = "Metrics_Chart1"
-       
-    'reslect tab
-   objExcel.Sheets(strTabName).Select
-   objExcel.ActiveSheet.Range(brk5).Select
-   
-   With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Region")
-        .PivotItems("Georgia").Visible = False
-        .PivotItems("Hawaii").Visible = False
-        .PivotItems("National").Visible = False
-        .PivotItems("Northwest").Visible = False
-        .PivotItems("Ohio").Visible = False
-        .PivotItems("Colorado").Visible = False
-        .PivotItems("National").Visible = True
-        .PivotItems("Region").Visible = False
-        .PivotItems("(blank)").Visible = False
-    End With
-
-   With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Metric")
-        .PivotItems("Review Period:").Visible = False
-        .PivotItems("(blank)").Visible = False
-    End With
-
-    objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields( _
-        "Region").Subtotals = Array(False, False, False, False, False, False, False, False, _
-        False, False, False, False)
-        
-           objExcel.ActiveSheet.Range(brk5).Select
-           
-     rng = objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").TableRange1.Address '(ReferenceStyle:=xlR1C1)
-    objExcel.Sheets("Metrics_Chart1").Select
-
-   objExcel.Application.ActiveWorkbook.ActiveChart.SetSourceData Source:=objExcel.Sheets("Metrics_By_Region_Report").Range( _
-        rng)
-
-    With objExcel.Application.ActiveWorkbook.ActiveChart
-        .HasTitle = False
-        .Axes(xlCategory, xlPrimary).HasTitle = False
-        .Axes(xlValue, xlPrimary).HasTitle = False
-    End With
-
-    With objExcel.Application.ActiveWorkbook.ActiveChart
-        .HasTitle = False
-        .Axes(xlCategory, xlPrimary).HasTitle = False
-        .Axes(xlValue, xlPrimary).HasTitle = False
-    End With
-        objExcel.Sheets(strTabName).Select
-    
-    End If
-End Function
-
-Function fn_Header(ByRef rsGRReport As dao.recordSet, ByRef rsgRR_Report_Desc As dao.recordSet, ByRef rsStrTable As dao.recordSet, i As Long, strTabName As String)
-
-Dim rsgroupSort As dao.recordSet
-
+Dim rsgroupSort As DAO.Recordset
 Dim db As Database
 Dim dbl As Database
-
 
 Set db = DBEngine(0)(0)
 
@@ -2483,14 +2362,13 @@ Debug.Print "Stop"
         strRange_1 = ""
         strRange_2 = ""
         strRange_3 = ""
-        strRange_1 = ("A" & rsgroupSort![begin1] & ":" & "A" & rsgroupSort![End1])
-        strRange_2 = ("L" & rsgroupSort![begin1] & ":" & "L" & rsgroupSort![End1])
-        strRange_3 = ("O" & rsgroupSort![begin1] & ":" & "O" & rsgroupSort![End1])
+        strRange_1 = ("B" & rsgroupSort![begin1] & ":" & "B" & rsgroupSort![End1])
+        strRange_2 = ("M" & rsgroupSort![begin1] & ":" & "M" & rsgroupSort![End1])
+        strRange_3 = ("P" & rsgroupSort![begin1] & ":" & "P" & rsgroupSort![End1])
         
         Debug.Print strRange_1
                 Debug.Print strRange_2
                         Debug.Print strRange_3
-                        
                         
         
         objExcel.Application.Sheets.Add
@@ -2509,6 +2387,8 @@ Debug.Print "Stop"
         
         objExcel.ActiveChart.SeriesCollection.NewSeries
         objExcel.ActiveChart.FullSeriesCollection(1).Name = "=KPI_Monthly!" & strRange_1
+        
+        
         objExcel.ActiveChart.FullSeriesCollection(1).Values = "=KPI_Monthly!" & strRange_2
         objExcel.ActiveChart.FullSeriesCollection(1).Name = "=""Work Order on Time %"""
         objExcel.ActiveChart.SeriesCollection.NewSeries
@@ -2644,9 +2524,9 @@ Debug.Print "Stop"
         strRange_1 = ""
         strRange_2 = ""
         strRange_3 = ""
-        strRange_1 = ("$A$" & rsgroupSort![begin1] & ":" & "$A$" & rsgroupSort![End1])
-        strRange_2 = ("$L$" & rsgroupSort![begin1] & ":" & "$L$" & rsgroupSort![End1])
-        strRange_3 = ("$O$" & rsgroupSort![begin1] & ":" & "$O$" & rsgroupSort![End1])
+        strRange_1 = ("$B$" & rsgroupSort![begin1] & ":" & "$B$" & rsgroupSort![End1])
+        strRange_2 = ("$M$" & rsgroupSort![begin1] & ":" & "$M$" & rsgroupSort![End1])
+        strRange_3 = ("$P$" & rsgroupSort![begin1] & ":" & "$P$" & rsgroupSort![End1])
         
         Debug.Print strRange_1
                 Debug.Print strRange_2
@@ -2776,14 +2656,12 @@ Debug.Print "Stop"
         objExcel.Application.Range("A1").Select
 
 
- 
-
 End If
 
 End Function
 
-Function fn_GrandTotalsOnChart(ByRef rsGRReport As dao.recordSet, ByRef rsgRR_Report_Desc As dao.recordSet, ByRef rsStrTable As dao.recordSet, i As Long, strTabName As String)
-Dim rsgroupSort As dao.recordSet
+Function fn_GrandTotalsOnChart(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, strTabName As String)
+Dim rsgroupSort As DAO.Recordset
 Dim col As String, strRange_1 As String, strRange_2 As String, strRange_3 As String
 Dim strRange_4 As String, strRange_5 As String, strRange_6 As String, strRange_7 As String
 Dim db As Database
@@ -2826,7 +2704,7 @@ n = 38
 For n = 38 To count1 + n Step 1
         '=KPI_Monthly!A661
 
-        strRange_1 = "=KPI_Monthly!A" & rsgroupSort![begin1] + i
+        strRange_1 = "=KPI_Monthly!B" & rsgroupSort![begin1] + i
         'Debug.Print strRange_1
 
         objExcel.Application.Range("I" & n).Select
@@ -2845,27 +2723,27 @@ n = 38
 For n = 38 To count1 + n Step 1
         '=KPI_Monthly!A661
 
-        strRange_2 = "=KPI_Monthly!K" & rsgroupSort![begin1] + i
+        strRange_2 = "=KPI_Monthly!L" & rsgroupSort![begin1] + i
         objExcel.Application.Range("J" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_2
         
-        strRange_3 = "=KPI_Monthly!J" & rsgroupSort![begin1] + i
+        strRange_3 = "=KPI_Monthly!K" & rsgroupSort![begin1] + i
         objExcel.Application.Range("K" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_3
         
-        strRange_4 = "=KPI_Monthly!L" & rsgroupSort![begin1] + i
+        strRange_4 = "=KPI_Monthly!M" & rsgroupSort![begin1] + i
         objExcel.Application.Range("L" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_4
         
-        strRange_5 = "=KPI_Monthly!M" & rsgroupSort![begin1] + i
+        strRange_5 = "=KPI_Monthly!N" & rsgroupSort![begin1] + i
         objExcel.Application.Range("M" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_5
         
-        strRange_6 = "=KPI_Monthly!N" & rsgroupSort![begin1] + i
+        strRange_6 = "=KPI_Monthly!O" & rsgroupSort![begin1] + i
         objExcel.Application.Range("N" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_6
         
-        strRange_7 = "=KPI_Monthly!O" & rsgroupSort![begin1] + i
+        strRange_7 = "=KPI_Monthly!P" & rsgroupSort![begin1] + i
         objExcel.Application.Range("O" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_7
 
@@ -3077,7 +2955,7 @@ n = 38
 For n = 38 To count1 + n Step 1
         '=KPI_Special!A661
 
-        strRange_1 = "=KPI_Special!A" & rsgroupSort![begin1] + i
+        strRange_1 = "=KPI_Special!B" & rsgroupSort![begin1] + i
         'Debug.Print strRange_1
 
         objExcel.Application.Range("I" & n).Select
@@ -3096,27 +2974,27 @@ n = 38
 For n = 38 To count1 + n Step 1
         '=KPI_Monthly!A661
 
-        strRange_2 = "=KPI_Special!K" & rsgroupSort![begin1] + i
+        strRange_2 = "=KPI_Special!L" & rsgroupSort![begin1] + i
         objExcel.Application.Range("J" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_2
         
-        strRange_3 = "=KPI_Special!J" & rsgroupSort![begin1] + i
+        strRange_3 = "=KPI_Special!K" & rsgroupSort![begin1] + i
         objExcel.Application.Range("K" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_3
         
-        strRange_4 = "=KPI_Special!L" & rsgroupSort![begin1] + i
+        strRange_4 = "=KPI_Special!M" & rsgroupSort![begin1] + i
         objExcel.Application.Range("L" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_4
         
-        strRange_5 = "=KPI_Special!M" & rsgroupSort![begin1] + i
+        strRange_5 = "=KPI_Special!N" & rsgroupSort![begin1] + i
         objExcel.Application.Range("M" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_5
         
-        strRange_6 = "=KPI_Special!N" & rsgroupSort![begin1] + i
+        strRange_6 = "=KPI_Special!O" & rsgroupSort![begin1] + i
         objExcel.Application.Range("N" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_6
         
-        strRange_7 = "=KPI_Special!O" & rsgroupSort![begin1] + i
+        strRange_7 = "=KPI_Special!P" & rsgroupSort![begin1] + i
         objExcel.Application.Range("O" & n).Select
         objExcel.Application.ActiveCell.Formula = strRange_7
 
@@ -3296,4 +3174,3 @@ Next n
 End If
 
 End Function
-

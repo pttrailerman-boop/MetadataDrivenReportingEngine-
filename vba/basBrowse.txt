@@ -1,4 +1,3 @@
-Attribute VB_Name = "basBrowse"
 ' basBrowse
 Option Compare Database
 Option Explicit

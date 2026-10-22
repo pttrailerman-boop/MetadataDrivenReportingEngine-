@@ -1,4 +1,3 @@
-Attribute VB_Name = "mod_IsReportOpen"
 Option Compare Database
 Option Explicit
 

@@ -1,4 +1,3 @@
-Attribute VB_Name = "modExportToExcel"
 Option Compare Database
 Option Explicit
 Public glblPwd As Variant
@@ -38,9 +37,9 @@ Dim bExists As Boolean
 Dim fok As Variant
 Dim tOK As Boolean
 
-Dim rs1 As dao.recordSet
-Dim rs2 As dao.recordSet
-Dim rsTab As dao.recordSet
+Dim rs1 As DAO.Recordset
+Dim rs2 As DAO.Recordset
+Dim rsTab As DAO.Recordset
 
 Dim strFileOne As String
 Dim mypath As String
@@ -241,7 +240,7 @@ bExists = FileExists_TSB(sPath)
                             Wend
                             
 
-                            oBook.Close savechanges:=True
+                            oBook.Close SaveChanges:=True
                             oExcel.Quit
 
 '-----------------------------------Format with clsExport-------------------------------------------------------------------------
@@ -336,7 +335,7 @@ resumeSaveFile:
                             Wend
                             
 
-                            oBook.Close savechanges:=True
+                            oBook.Close SaveChanges:=True
                             oExcel.Quit
                             
 
@@ -355,8 +354,15 @@ resumeSaveFile:
                                 End With
                             Call SetMousePointer_TSB(0)
     End If
+    
 'it worked
+
 Call SetMousePointer_TSB(0)
+          [Forms]![frmReportLauncher]![txtFolderPathChart].Visible = True
+          [Forms]![frmReportLauncher]![txtFolderPathChart].Caption = sPath
+          [Forms]![frmReportLauncher]![txtFolderPathChart].HyperlinkAddress = sPath
+Beep
+MsgBox "Click on hyperlink to retrieve workbook", vbInformation, "Excel Workbook Created"
 '-----------------------------------------------------------------------------------------------------------------------------------------
 Exit Function
 
@@ -424,10 +430,10 @@ End Function
 
 Function ReleaseCache(rptString As String) As String
 Dim db As Database
-Dim rs1 As dao.recordSet
+Dim rs1 As DAO.Recordset
 Dim clsCreateRecord As New clsCreateRecord
 Dim qOk As Boolean
-Dim rsl As dao.recordSet
+Dim rsl As DAO.Recordset
 
 On Error GoTo errReleaseCache
 
@@ -466,5 +472,3 @@ End If
 
     Call SetMousePointer_TSB(0)
 End Function
-
-
