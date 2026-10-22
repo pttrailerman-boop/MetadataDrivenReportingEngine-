@@ -17,6 +17,31 @@ The worksheet header is documented separately because it is rendered once above 
 
 The guide reflects the current Medicare reference renderer and the earlier KPI renderer. Where the schema contains fields that the current code does not consume, those fields are identified as reserved, legacy, or unimplemented rather than presented as active features.
 
+## 1. Worksheet-Level Header Metadata
+
+`tblGoodFieldName_Header` controls the one-time header area at the top of each worksheet.
+
+It can create and format:
+
+- Worksheet titles and subtitles
+- Static labels and explanatory text
+- Excel formulas
+- Public-source hyperlinks
+- Generated-by information
+- Generated date and time values
+- Merged cell ranges
+- Fonts, fills, row heights, and borders
+- Freeze-below behavior
+
+The worksheet-level header is different from the H1 zone in `tblGoodFieldName_Report`:
+
+```text
+tblGoodFieldName_Header
+    -> rendered once at the top of the worksheet
+
+tblGoodFieldName_Report H1
+    -> rendered once for every grouped report band
+
 ## 1. Before Editing Metadata
 
 Metadata in this project behaves like executable configuration. A small change can affect the physical Excel layout, formula placement, inserted rows, merged ranges, or the visible boundaries of a report section.
