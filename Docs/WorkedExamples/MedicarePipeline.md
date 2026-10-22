@@ -659,6 +659,90 @@ The 99-row strategy is intended to exercise:
 - Grand totals
 - Chart preparation
 
+### Activating the 99-row test source
+
+The Medicare test variant uses the same downstream queries and metadata as the production report. Testing is activated by temporarily exchanging the production and test summary-table names.
+
+#### Before running the test
+
+1. Rename the production table:
+
+```text
+tblMedicare_ReportSummary
+```
+
+to:
+
+```text
+tblMedicare_ReportSummary - Orig
+```
+
+2. Rename the test table:
+
+```text
+tblMedicare_ReportSummary - Test
+```
+
+to the production name expected by the downstream queries:
+
+```text
+tblMedicare_ReportSummary
+```
+
+3. Run the normal Medicare reporting pipeline.
+
+Because `qryMedicare_ReportFinal` reads from `tblMedicare_ReportSummary`, the downstream SQL, `tblReportSequence` configuration, sorting-table logic, metadata, and renderer continue using the same expected table name.
+
+#### Restoring the production source
+
+After testing:
+
+1. Rename the active test table:
+
+```text
+tblMedicare_ReportSummary
+```
+
+back to:
+
+```text
+tblMedicare_ReportSummary - Test
+```
+
+2. Rename the production backup:
+
+```text
+tblMedicare_ReportSummary - Orig
+```
+
+back to:
+
+```text
+tblMedicare_ReportSummary
+```
+
+3. Open `qryMedicare_ReportFinal` and confirm that the production row count and expected data have been restored.
+
+> **Important:** Do not run the production report until `tblMedicare_ReportSummary` once again refers to the full production summary table.
+
+### Recommended test loop
+
+```text
+Rename production table to backup name
+    -> rename 99-row test table to production name
+    -> build final output
+    -> build sorting table
+    -> render workbook
+    -> inspect every band
+    -> correct SQL or metadata
+    -> repeat as needed
+    -> restore original table names
+    -> confirm production data
+    -> run full-volume validation
+```
+
+
+
 Recommended loop:
 
 ```text
