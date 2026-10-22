@@ -412,9 +412,9 @@ beginSheet > final worksheet-header row
 ```
 For complete field definitions and Medicare examples, see the [Report Header Reference](ReportHeaderReference.md).
   
-## 9. Configure the H1 Header
+## 9. Configure the Repeating H1 Band Header
 
-Add H1 content only after the basic worksheet is stable.
+Add repeating H1 content only after the plain worksheet and optional worksheet-level header are stable. The H1 zone is generated once for every report band and is controlled by `tblGoodFieldName_Report`.
 
 For each H1 label/value item, configure:
 
@@ -536,6 +536,11 @@ Review the workbook in this order.
 - Correct worksheet order
 - Correct raw field-to-column alignment
 - Correct hidden columns
+- Worksheet-level title and subtitle appear once
+- Header formulas and hyperlinks work
+- Header merged ranges do not overlap
+- The first generated report band begins below the worksheet header
+- Freeze-below behavior uses the intended row
 
 ### 15.2 Report bands
 
@@ -591,6 +596,17 @@ Test SQL
 
 ## 17. Troubleshooting Quick Reference
 
+### Worksheet-level header does not appear
+
+Confirm matching `tblGoodFieldName_Header` records exist for the selected `Report` and `Tab`.
+
+For the Medicare reference implementation, also confirm that `fn_FindBreaks` uses:
+
+```vb
+Const original = 2
+Const beginSheet = 10
+```
+
 ### Destination table already exists
 
 The table-marker row is missing, uses the wrong name, or appears after the make-table query.
@@ -640,6 +656,14 @@ Ensure the current renderer restores automatic calculation and performs a full c
 - [ ] Grand-total metadata exists when `HasTotals = True`.
 - [ ] The 99-row test renders correctly.
 - [ ] The full workbook recalculates and saves correctly.
+- [ ] Worksheet-header metadata exists when a one-time header is required.
+- [ ] Worksheet-header `Report` and `Tab` values match the report configuration.
+- [ ] Header row numbers and merge ranges are valid.
+- [ ] Header formulas and hyperlinks render correctly.
+- [ ] `beginSheet` is at least 10 for the Medicare reference implementation.
+- [ ] `beginSheet` is greater than the final worksheet-header row.
+- [ ] The first report band begins below the worksheet header.
+
 
 ## 19. Next Steps
 
@@ -653,7 +677,11 @@ After the first worksheet works:
 
 ## 20. Related Documentation
 
-- [Project README](../README.md)
+- ../README.md
 - [Architectural White Paper](WhitePaper.md)
+- [Report Header Reference](ReportHeaderReference.md)
 - [Metadata Configuration Guide](MetadataConfigurationGuide.md)
 - [`tblReportSequence` Reference](TblReportSequenceReference.md)
+- [Troubleshooting Guide](Troubleshooting.md)
+- WorkedExamples/MedicarePipeline.md
+- WorkedExamples/KPIPipeline.md
