@@ -67,12 +67,8 @@ The host application and reporting engine are intentionally separated.
 6. The engine executes the configured SQL sequence, creates worksheets, transfers recordsets, calculates report bands, applies metadata, creates charts, and saves the workbook.
 7. The launcher displays a hyperlink to the completed file.
 
-Suggested screenshots:
+<img width="1799" height="2268" alt="image" src="https://github.com/user-attachments/assets/0b718ac6-30ee-4b49-b6b7-12b01b6f75cb" />
 
-- `Screenshots/KPI_ReportManager.png`
-- `Screenshots/KPI_ReportWorkflow.png`
-- `Screenshots/Medicare_ReportManager.png`
-- `Screenshots/Medicare_ReportWorkflow.png`
 
 ## Architecture
 
