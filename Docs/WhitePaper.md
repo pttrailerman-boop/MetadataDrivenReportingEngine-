@@ -1,6 +1,8 @@
 # Metadata-Driven Excel Reporting Engine
 ## Architectural White Paper
 
+[Back to project README](../README.md)
+
 **Author:** Alex Fritts  
 **Technology:** Microsoft Access, Access SQL, DAO, ADO, VBA, Excel COM automation  
 **Reference implementations:** Medicare reporting demo and KPI reporting demo
