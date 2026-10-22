@@ -945,5 +945,13 @@ SUMIFS($K$1:INDEX(K:K,ROW()-1),$J$1:INDEX(J:J,ROW()-1),"<>Totals:")
 
 These examples are patterns, not universal formulas. Replace column letters and criteria with values appropriate to the target worksheet.
 
-## 22. Related Documentation - ../README.md 
-- [Getting Started](GettingStarted.md) - [Architectural White Paper](WhitePaper.md) - [Report Header Metadata Reference](ReportHeaderReference.md) - [`tblReportSequence` Reference](TblReportSequenceReference.md) - [Troubleshooting Guide](Troubleshooting.md) - WorkedExamples/MedicarePipeline.md - WorkedExamples/KPIPipeline.md
+## 22. Related Documentation
+
+- [Project README](../README.md)
+- [Getting Started](GettingStarted.md)
+- [Architectural White Paper](WhitePaper.md)
+- [Report Header Metadata Reference](ReportHeaderReference.md)
+- [`tblReportSequence` Reference](TblReportSequenceReference.md)
+- [Troubleshooting Guide](Troubleshooting.md)
+- [Medicare Pipeline](WorkedExamples/MedicarePipeline.md)
+- [KPI Pipeline](WorkedExamples/KPIPipeline.md)
