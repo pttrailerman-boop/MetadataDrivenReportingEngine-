@@ -21,29 +21,29 @@ This repository demonstrates a practical reporting architecture for recurring bu
 
 ### Start Here
 
-- Docs/GettingStarted.md  
+- [Getting Started](Docs/GettingStarted.md)  
   Step-by-step instructions for configuring a new report, worksheet source, sorting table, metadata layout, and `tblReportSequence`.
 
-- Docs/WhitePaper.md  
+- [Architectural White Paper](Docs/WhitePaper.md)  
   Detailed explanation of the reporting architecture, SQL orchestration, break calculation, metadata model, and Excel rendering process.
 
 ### Configuration References
 
-- Docs/MetadataConfigurationGuide.md  
+- [Metadata Configuration Guide](Docs/MetadataConfigurationGuide.md)  
   Reference for H1, B, B_D, F1, and F2 report zones, formula tokens, hidden helper columns, section-wide metadata, and grand totals.
 
-- Docs/TblReportSequenceReference.md  
+- [`tblReportSequence` Reference](Docs/TblReportSequenceReference.md)  
   Field-by-field guide to SQL execution order, QueryDef creation, table cleanup, worksheet sources, sorting tables, totals, and spacing overrides.
 
-- Docs/Troubleshooting.md  
+- [Troubleshooting Guide](Docs/Troubleshooting.md)  
   Diagnostic guidance for SQL, sequence, sorting-table, metadata, formula, rendering, calculation, and chart problems.
 
 ### Worked Examples
 
-- Docs/WorkedExamples/MedicarePipeline.md  
+- [Medicare Pipeline](Docs/WorkedExamples/MedicarePipeline.md)  
   Complete walkthrough from public Medicare and RBCS data through Access SQL, `tblReportSequence`, report-band construction, totals, and Excel output.
 
-- Docs/WorkedExamples/KPIPipeline.md  
+- [KPI Pipeline](Docs/WorkedExamples/KPIPipeline.md)  
   Complete walkthrough of the two-worksheet KPI workbook, separate sorting tables, hidden helper columns, running footer calculations, grand totals, and charts.
 
 ## Reference Implementations
