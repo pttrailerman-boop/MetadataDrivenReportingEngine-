@@ -432,7 +432,13 @@ When adjusting the worksheet starting position, validate both the header and the
 
 ### Header does not appear
 
-Check `Report`, `Tab`, `Active_YN`, and the renderer query that loads header metadata.
+Confirm that `fn_FindBreaks` reserves enough rows above the first report record for the worksheet-level header.
+
+The Medicare header configuration requires report records to begin at row 10 or later:
+
+```vb
+Const original = 2
+Const beginSheet = 10
 
 ### Header appears on the wrong worksheet
 
