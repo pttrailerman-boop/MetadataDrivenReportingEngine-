@@ -42,6 +42,12 @@ tblGoodFieldName_Header
 tblGoodFieldName_Report H1
     -> rendered once for every grouped report band
 ```
+The Medicare implementation requires enough reserved rows above the first generated report band. In `fn_FindBreaks`, the generated report area must begin at row 10 or later:
+
+```vb
+Const original = 2
+Const beginSheet = 10
+```
 
 ## 2. Before Editing Metadata
 
