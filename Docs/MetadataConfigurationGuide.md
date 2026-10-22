@@ -845,42 +845,51 @@ Do not document them as active features until the renderer includes explicit cod
 
 Use this order when creating metadata for a new worksheet.
 
-### Phase 1: Core columns
+### Phase 1: Worksheet header
+
+1. Copy a working `tblGoodFieldName_Header` configuration.
+2. Change `Report` and `Tab` to match the new worksheet.
+3. Configure the title, subtitle, formulas, source hyperlink, and generated-report information.
+4. Verify the header row numbers and merge ranges.
+5. Confirm `beginSheet` is at least 10 and greater than the final worksheet-header row.
+6. Test the worksheet header before configuring the repeating report bands.
+
+### Phase 2: Core columns
 
 1. Add one metadata row per required Excel column.
 2. Set `Sort`, `Report`, `Tab`, and `Letter`.
 3. Set `ColumnWidth` and `Column_Hide`.
 4. Render a plain worksheet and verify column alignment.
 
-### Phase 2: Body and details
+### Phase 3: Body and details
 
 1. Add `FieldName_B` values.
 2. Configure B formatting.
 3. Configure B_D formats, alignment, and borders.
 4. Render and inspect several groups.
 
-### Phase 3: Primary headers
+### Phase 4: Primary headers
 
 1. Set H1 label/value fields only on required metadata rows.
 2. Add H1 positions.
 3. Place section-wide H1 settings on the first sorted metadata row.
 4. Test merged and unmerged behavior separately.
 
-### Phase 4: Primary footers
+### Phase 5: Primary footers
 
 1. Add `FieldName_F1` labels.
 2. Add `Range_F1` subtotal formulas.
 3. Validate `@`, `#`, and `?` replacement.
 4. Check number formats and borders.
 
-### Phase 5: Extended footers and helpers
+### Phase 6: Extended footers and helpers
 
 1. Add hidden helper columns if needed.
 2. Add formulas to the helper columns.
 3. Add F2 label/value items.
 4. Verify every F2 position fits inside the allocation.
 
-### Phase 6: Grand totals and charts
+### Phase 7: Grand totals and charts
 
 1. Configure `tblGoodFieldName_G_Totals`.
 2. Enable `HasTotals` where required.
