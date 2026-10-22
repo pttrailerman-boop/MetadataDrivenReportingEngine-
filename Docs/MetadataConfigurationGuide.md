@@ -48,7 +48,15 @@ The Medicare implementation requires enough reserved rows above the first genera
 Const original = 2
 Const beginSheet = 10
 ```
+`original` identifies the original starting row of the exported records before report-band rows are inserted.
 
+`beginSheet` identifies the row where the first generated report band begins. If `beginSheet` is less than 10, report-band construction can occupy the rows reserved for `tblGoodFieldName_Header`, causing the worksheet header to be overwritten, displaced, or omitted.
+
+When expanding the worksheet header, maintain this rule:
+
+```text
+beginSheet > final worksheet-header row
+```
 ## 2. Before Editing Metadata
 
 Metadata in this project behaves like executable configuration. A small change can affect the physical Excel layout, formula placement, inserted rows, merged ranges, or the visible boundaries of a report section.
