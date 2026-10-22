@@ -1,7 +1,7 @@
 # Metadata-Driven Excel Reporting Engine
 ## Architectural White Paper
 
-[Back to project README](../README.md)
+[Back to project README](../README.md) | [Getting Started](GettingStarted.md) | [Report Header Reference](ReportHeaderReference.md) | [Metadata Configuration Guide](MetadataConfigurationGuide.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md) | [Troubleshooting](Troubleshooting.md) | [Medicare Pipeline](WorkedExamples/MedicarePipeline.md) | [KPI Pipeline](WorkedExamples/KPIPipeline.md)
 
 **Author:** Alex Fritts  
 **Technology:** Microsoft Access, Access SQL, DAO, ADO, VBA, Excel COM automation  
@@ -90,9 +90,13 @@ Report orchestrator
     v
 ADO transfer into Excel
     |
+    | one-time worksheet header
+    v
+Worksheet-header metadata
+    |
     | calculated break coordinates
     v
-Metadata-driven renderer
+Repeating report-band renderer
     |
     | formulas, totals, charts, recalculation, save
     v
@@ -136,10 +140,11 @@ The public forms demonstrate where this logic belongs. Their **Get Data** button
 - Copy records beginning at cell `A2`
 - Calculate report breaks
 - Insert rows for report zones
-- Apply metadata-controlled formatting
+- Apply repeating report-band formatting from `tblGoodFieldName_Report`
 - Generate formulas
 - Create subtotals and grand totals
 - Hide helper columns
+- Apply the one-time worksheet header from `tblGoodFieldName_Header`
 - Create charts
 - Recalculate and save the workbook
 
@@ -288,6 +293,33 @@ Copy source records
     -> insert physical rows
     -> apply formulas and formatting
 ```
+### 7.4 Reserved worksheet-header rows
+
+The one-time worksheet header occupies reserved rows above the first generated report band. This header is controlled by `tblGoodFieldName_Header`, not by the repeating H1 metadata.
+
+```text
+tblGoodFieldName_Header
+    -> rendered once at the top of the worksheet
+
+tblGoodFieldName_Report H1
+    -> rendered once for every report band
+```
+The Medicare reference implementation requires `fn_FindBreaks` to begin the generated report-band area at row 10 or later:
+
+```vb
+Const original = 2
+Const beginSheet = 10
+```
+`original` identifies the initial row position of the exported records before report-band rows are inserted.
+
+`beginSheet` identifies where the first generated report band begins. If `beginSheet` is too low, report-band construction can occupy the rows reserved for the worksheet header.
+
+The required relationship is:
+
+```text
+beginSheet > final worksheet-header row
+```
+For complete header-field definitions and Medicare examples, see the [Report Header Reference](ReportHeaderReference.md).
 
 ## 8. Report-Band Anatomy
 
