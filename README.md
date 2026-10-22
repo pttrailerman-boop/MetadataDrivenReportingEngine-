@@ -12,7 +12,8 @@ This repository demonstrates a practical reporting architecture for recurring bu
 - Excel COM automation from VBA
 - Multiple worksheets from one report definition
 - Dynamic report bands based on sorting and grouping tables
-- Metadata-generated formulas, formatting, headers, footers, subtotals, and grand totals
+- Metadata-driven one-time worksheet headers with titles, formulas, hyperlinks, merged ranges, generated timestamps, formatting, borders, and freeze-below behavior
+- Metadata-generated formulas, repeating report-band formatting, subtotals, extended footers, and report-level grand totals
 - Hidden helper columns and running calculations
 - Programmatically generated charts
 - Standalone `.xlsx` output without Access reports
@@ -32,7 +33,7 @@ This repository demonstrates a practical reporting architecture for recurring bu
 - [Metadata Configuration Guide](Docs/MetadataConfigurationGuide.md)  
   Reference for H1, B, B_D, F1, and F2 report zones, formula tokens, hidden helper columns, section-wide metadata, and grand totals.
 
-- [ReportHeader Reference Guide](Docs/ReportHeaderReference.md) 
+- [Report Header Reference Guide](Docs/ReportHeaderReference.md) 
   Field-by-field guide to `tblGoodFieldName_Header`, including worksheet titles, formulas, source hyperlinks, merged ranges, formatting, reserved header rows, `beginSheet` requirements, borders, row placement, and freeze-below behavior.
 
 - [`tblReportSequence` Reference](Docs/TblReportSequenceReference.md)  
@@ -67,7 +68,11 @@ The pipeline:
 6. Calculates estimated submitted charges, allowed amounts, and Medicare payments.
 7. Produces a report-ready Access source and sorting table.
 8. Passes the prepared output to the metadata-driven Excel renderer.
-9. Generates a formatted worksheet and Medicare Top 10 chart.
+9. Calculates and renders the repeating RBCS report bands.
+10. Generates formulas, subtotals, and report-level grand totals.
+11. Applies the one-time worksheet header from `tblGoodFieldName_Header`.
+12. Creates the Medicare Top 10 chart.
+13. Recalculates and saves the standalone workbook.
 
 The current Medicare renderer also includes safer header and footer override handling and forces a complete Excel recalculation before saving the workbook.
 
@@ -137,9 +142,13 @@ ADO recordset transfer to Excel
     |
     | calculated break coordinates
     v
-Metadata-driven formatting and formulas
+Repeating report-band rendering
     |
-    | charts, totals, recalculation, save
+    | formulas, subtotals, and grand totals
+    v
+Worksheet-header metadata
+    |
+    | chart creation, recalculation, save
     v
 Standalone XLSX workbook
 ```
@@ -170,11 +179,12 @@ In the public demos, the **Get Data** button is instructional and the sample dat
 - Copy returned records beginning at cell `A2`
 - Calculate grouping breaks
 - Insert report-band rows
-- Apply formatting metadata
-- Generate formulas and totals
+- Apply repeating report-band metadata from `tblGoodFieldName_Report`
+- Generate formulas, subtotals, and grand totals
 - Hide helper columns
+- Apply the one-time worksheet header from `tblGoodFieldName_Header`
 - Create charts
-- Save a standalone `.xlsx` file
+- Recalculate and save a standalone `.xlsx` file
 
 ## `tblReportSequence`: The Execution Manifest
 
@@ -239,10 +249,21 @@ These coordinates drive all later formatting and formula placement.
 
 ## Metadata-Driven Excel Layout
 
-The active report metadata is stored primarily in:
+The active report metadata is divided across three layers:
 
-- `tblGoodFieldName_Report`
-- `tblGoodFieldName_G_Totals`
+- `tblGoodFieldName_Header` controls the one-time worksheet-level header.
+- `tblGoodFieldName_Report` controls the repeating H1, B, B_D, F1, and F2 report-band zones.
+- `tblGoodFieldName_G_Totals` controls the final report-level grand-total block.
+
+The worksheet-level header and the repeating H1 header are separate:
+
+```text
+tblGoodFieldName_Header
+    -> rendered once at the top of the worksheet
+
+tblGoodFieldName_Report H1
+    -> rendered once for every report band
+```
 
 Each ordinary report band contains several logical zones:
 
@@ -478,4 +499,4 @@ Alex F. is a workflow and reporting automation engineer focused on Microsoft Acc
 
 ## Documentation Status
 
-This README is the project overview. The deeper architecture, configuration reference, worked pipelines, and troubleshooting guidance are being organized under `Docs/`.
+The repository includes the architectural white paper, getting-started guide, worksheet-header reference, metadata configuration guide, `tblReportSequence` reference, troubleshooting guide, and worked Medicare and KPI pipelines. Additional screenshots and annotated workbook examples may be added as the demonstrations evolve.
