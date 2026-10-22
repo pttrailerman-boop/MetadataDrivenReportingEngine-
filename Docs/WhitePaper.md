@@ -90,15 +90,15 @@ Report orchestrator
     v
 ADO transfer into Excel
     |
-    | one-time worksheet header
-    v
-Worksheet-header metadata
-    |
     | calculated break coordinates
     v
 Repeating report-band renderer
     |
-    | formulas, totals, charts, recalculation, save
+    | formulas, subtotals, and grand totals
+    v
+Worksheet-header metadata
+    |
+    | chart creation, recalculation, save
     v
 Standalone XLSX workbook
 ```
@@ -411,7 +411,7 @@ The renderer often:
 
 The first sorted metadata record should therefore be treated as the authoritative configuration row for section-wide properties.
 
-### 9.3 Three metadata behavior classes
+### 9.3 Four metadata behavior classes
 
 A useful documentation classification is:
 
@@ -598,16 +598,17 @@ The overall workbook lifecycle is:
 6. Create workbook and worksheets
 7. Open each final source through ADO
 8. Copy each recordset to its worksheet
-9. Apply one-time worksheet-header metadata
-10. Build worksheet-to-spacing associations
-11. Calculate break coordinates
-12. Insert report-band rows
-13. Apply repeating report-band metadata
-14. Generate formulas and totals
-15. Create charts
-16. Recalculate workbook formulas
-17. Save and close workbook
-18. Display output hyperlink
+9. Build worksheet-to-spacing associations
+10. Calculate break coordinates
+11. Insert report-band rows
+12. Apply repeating report-band metadata
+13. Generate formulas
+14. Create subtotals and grand totals
+15. Apply one-time worksheet-header metadata
+16. Create charts
+17. Recalculate workbook formulas
+18. Save and close workbook
+19. Display output hyperlink
 ```
 
 The current Medicare renderer explicitly restores automatic calculation, forces full calculation, runs a full calculation rebuild, and processes pending events before saving. This prevents a workbook constructed under manual calculation mode from being saved with stale formula values.
@@ -666,7 +667,7 @@ The Medicare output demonstrates:
 - Grand totals
 - A Medicare Top 10 chart
 - Explicit recalculation before save
-- 
+
 ### 16.6 Worksheet-level header
 
 The Medicare worksheet uses `tblGoodFieldName_Header` to create a one-time report header above the repeating RBCS bands.
@@ -810,15 +811,28 @@ Formula metadata should normally omit the leading equals sign because the render
 
 Header and footer positions must fit within the allocated number of rows. A custom override that is too small can cause overlap or misplaced output.
 
-### 21.5 Parameterized queries
+### 21.5 Worksheet-header row reservation
+
+The worksheet-level header requires reserved rows above the first generated report band.
+
+For the Medicare reference implementation:
+
+```vb
+Const original = 2
+Const beginSheet = 10
+```
+
+If `beginSheet` is less than 10, or is not greater than the final worksheet-header row, report-band construction can overwrite, displace, or omit the worksheet header.
+
+### 21.6 Parameterized queries
 
 A final saved query opened through ADO must have all parameters resolved before the transfer stage.
 
-### 21.6 Calculation mode
+### 21.7 Calculation mode
 
 The renderer may disable automatic calculation for performance. The workbook must be recalculated before save when formulas were created under manual calculation mode.
 
-### 21.7 Excel process cleanup
+### 21.8 Excel process cleanup
 
 Errors during COM automation can leave an Excel process open. Development testing should include cleanup and recovery procedures.
 
