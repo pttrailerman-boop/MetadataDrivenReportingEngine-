@@ -1,6 +1,6 @@
 # Medicare Pipeline Worked Example
 
-[Back to project README](../../README.md) | [Getting Started](../GettingStarted.md) | [`tblReportSequence` Reference](../TblReportSequenceReference.md) | [Metadata Configuration Guide](../MetadataConfigurationGuide.md)
+[Back to project README](../../README.md) | [Getting Started](../GettingStarted.md) | [Report Header Reference](../ReportHeaderReference.md) | [`tblReportSequence` Reference](../TblReportSequenceReference.md) | [Metadata Configuration Guide](../MetadataConfigurationGuide.md) | [Troubleshooting](../Troubleshooting.md) | [KPI Pipeline](KPIPipeline.md)
 
 ## Purpose
 
@@ -46,7 +46,10 @@ tblReportSequence orchestration
 ADO transfer to Medicare_Report worksheet
     |
     v
-Break calculation and metadata formatting
+Apply one-time worksheet header
+    |
+    v
+Break calculation and repeating-band metadata
     |
     v
 Grand totals, Top 10 chart, recalculation, save
