@@ -697,11 +697,11 @@ That separation is the main reusable pattern. A different application can replac
 
 ## 22. Related Documentation
 
-- ../../README.md
-- ../GettingStarted.md
-- ../WhitePaper.md
-- ../ReportHeaderReference.md
-- ../MetadataConfigurationGuide.md
-- ../TblReportSequenceReference.md
-- ../Troubleshooting.md
+- [Project README](../../README.md)
+- [Getting Started](../GettingStarted.md)
+- [Architectural White Paper](../WhitePaper.md)
+- [Report Header Reference](../ReportHeaderReference.md)
+- [Metadata Configuration Guide](../MetadataConfigurationGuide.md)
+- [`tblReportSequence` Reference](../TblReportSequenceReference.md)
+- [Troubleshooting Guide](../Troubleshooting.md)
 - [KPI Pipeline](KPIPipeline.md)
