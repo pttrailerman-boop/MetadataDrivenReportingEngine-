@@ -264,9 +264,19 @@ tblGoodFieldName_Header
 tblGoodFieldName_Report H1
     -> rendered once for every report band
 ```
+The Medicare reference implementation reserves space for the worksheet-level header by beginning the generated report-band area at row 10:
 
+```vb
+Const original = 2
+Const beginSheet = 10
+```
+The required relationship is:
+
+```text
+beginSheet > final worksheet-header row
+```
+For complete field definitions and examples, see the [Report Header Reference](Docs/ReportHeaderReference.md).
 Each ordinary report band contains several logical zones:
-
 ```text
 H1   Primary group header
 B    Body or column-heading row
