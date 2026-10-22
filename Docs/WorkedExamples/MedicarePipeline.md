@@ -647,7 +647,7 @@ Restore automatic calculation
 
 ## 20. The 99-Row Test Variant
 
-Use the Medicare test source before a full-volume run.
+Use the Medicare test source before a full-volume run.  This is for debugging your metadata. 
 
 The 99-row strategy is intended to exercise:
 
