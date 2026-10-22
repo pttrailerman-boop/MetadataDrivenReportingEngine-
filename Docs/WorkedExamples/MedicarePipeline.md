@@ -511,6 +511,8 @@ The first metadata row in `Sort` order should contain section-wide H1, F2, and b
 
 The left and right edges of shared ranges are based on the first and last visible Excel columns.
 
+![Medicare grouping and sorting helper columns](../../screenshots/Medicare_HelperColumns.png)
+
 ## 14. Apply Formula Templates
 
 The renderer replaces formula tokens with calculated row positions.
