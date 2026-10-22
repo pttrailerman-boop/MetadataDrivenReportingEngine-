@@ -16,8 +16,10 @@ This repository demonstrates a practical reporting architecture for recurring bu
 - Hidden helper columns and running calculations
 - Programmatically generated charts
 - Standalone `.xlsx` output without Access reports
-- 
-<img width="4032" height="1957" alt="image" src="https://github.com/user-attachments/assets/b295e858-a23a-4a42-ae56-27f33cbe571d" />
+
+## Documentation
+
+- [Architectural White Paper](Docs/WhitePaper.md)
 
 ## Reference Implementations
 
