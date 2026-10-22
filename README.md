@@ -32,6 +32,9 @@ This repository demonstrates a practical reporting architecture for recurring bu
 - [Metadata Configuration Guide](Docs/MetadataConfigurationGuide.md)  
   Reference for H1, B, B_D, F1, and F2 report zones, formula tokens, hidden helper columns, section-wide metadata, and grand totals.
 
+- Docs/ReportHeaderReference.md  
+  Field-by-field guide to `tblGoodFieldName_Header`, including worksheet titles, formulas, source hyperlinks, merged ranges, formatting, reserved header rows, `beginSheet` requirements, borders, row placement, and freeze-below behavior.
+
 - [`tblReportSequence` Reference](Docs/TblReportSequenceReference.md)  
   Field-by-field guide to SQL execution order, QueryDef creation, table cleanup, worksheet sources, sorting tables, totals, and spacing overrides.
 
