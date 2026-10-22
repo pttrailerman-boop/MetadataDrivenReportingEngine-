@@ -5,12 +5,15 @@
 
 ## Purpose
 
-This guide explains how the report metadata controls worksheet columns, report bands, formatting, formulas, subtotals, extended footers, hidden helper calculations, and report-level grand totals in the Metadata-Driven Excel Reporting Engine.
+This guide explains how the active metadata tables control workbook layout, formulas, formatting, repeating report blocks, subtotals, and grand totals in the MetadataDrivenReportingEngine.
 
-The primary metadata tables are:
+The active metadata tables are:
 
-- `tblGoodFieldName_Report`, used for ordinary grouped report bands
-- `tblGoodFieldName_G_Totals`, used for the final report-level grand-total block
+- `tblGoodFieldName_Header` for the one-time worksheet-level report header
+- `tblGoodFieldName_Report` for ordinary repeating grouped report blocks
+- `tblGoodFieldName_G_Totals` for the final report-level grand-total block
+
+The worksheet header is documented separately because it is rendered once above the repeating report bands and requires sufficient reserved worksheet rows. See the [Report Header Metadata Reference](ReportHeaderReference.md) for its complete field definitions, formulas, merged ranges, source hyperlinks, formatting, and `beginSheet` prerequisite.
 
 The guide reflects the current Medicare reference renderer and the earlier KPI renderer. Where the schema contains fields that the current code does not consume, those fields are identified as reserved, legacy, or unimplemented rather than presented as active features.
 
