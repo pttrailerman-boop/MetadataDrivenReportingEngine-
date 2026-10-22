@@ -71,19 +71,19 @@ The host application and reporting engine are intentionally separated.
 
 ### KPI Report Manager
 
-![KPI Report Manager](Screenshots/KPI_ReportManager.png)
+![KPI Report Manager](screenshots/KPI_ReportManager.png)
 
 ### KPI Reporting Workflow
 
-![KPI Reporting Workflow](Screenshots/KPI_ReportWorkflow.png)
+![KPI Reporting Workflow](screenshots/KPI_ReportWorkflow.png)
 
 ### Medicare Report Manager
 
-![Medicare Report Manager](Screenshots/Medicare_ReportManager.png)
+![Medicare Report Manager](screenshots/Medicare_ReportManager.png)
 
 ### Medicare Reporting Workflow
 
-![Medicare Reporting Workflow](Screenshots/Medicare_ReportWorkflow.png)
+![Medicare Reporting Workflow](screenshots/Medicare_ReportWorkflow.png)
 
 
 ## Architecture
