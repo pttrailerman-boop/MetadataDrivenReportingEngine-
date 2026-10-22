@@ -474,7 +474,7 @@ This engine addresses that middle ground. It keeps business-specific SQL and dat
 
 ## About the Author
 
-Alex F. is a workflow and reporting automation developer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
+Alex F. is a workflow and reporting automation engineer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
 
 ## Documentation Status
 
