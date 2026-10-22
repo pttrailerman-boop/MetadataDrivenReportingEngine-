@@ -606,6 +606,14 @@ For the Medicare reference implementation, also confirm that `fn_FindBreaks` use
 Const original = 2
 Const beginSheet = 10
 ```
+If `beginSheet` is less than 10, report-band construction can occupy the rows reserved for the worksheet-level header, causing the header to be overwritten, displaced, or omitted.
+
+### Worksheet header overlaps the first report band
+
+Confirm that the report-band starting row is greater than the final worksheet-header row:
+
+```text
+beginSheet > final worksheet-header row
 
 ### Destination table already exists
 
