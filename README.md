@@ -101,7 +101,7 @@ The host application and reporting engine are intentionally separated.
 3. The user selects a report definition.
 4. The optional **Render Sheet?** setting controls whether Excel remains visible while the workbook is built.
 5. The user selects **Create Spreadsheets**.
-6. The engine executes the configured SQL sequence, creates worksheets, transfers recordsets, calculates report bands, applies metadata, creates charts, and saves the workbook.
+6. The engine executes the configured SQL sequence, creates worksheets, transfers recordsets, constructs the repeating report bands, generates formulas and totals, applies the one-time worksheet header, creates charts, recalculates the workbook, and saves the completed `.xlsx` file.
 7. The launcher displays a hyperlink to the completed file.
 
 ## Demo Screenshots
@@ -408,7 +408,7 @@ The demonstrations use code-based charts rather than a fully generic chart-metad
 - The KPI renderer calls chart functions for worksheet charts and grand-total chart content.
 - The Medicare renderer creates a Top 10 chart from the completed worksheet data.
 
-Chart creation occurs after the worksheet sources, report bands, formulas, and totals have been prepared.
+Chart creation occurs after the worksheet sources, repeating report bands, formulas, totals, and one-time worksheet header have been prepared.
 
 ## Repository Structure
 
@@ -418,6 +418,7 @@ MetadataDrivenReportingEngine/
 |-- Docs/
 |   |-- WhitePaper.md
 |   |-- GettingStarted.md
+|   |-- ReportHeaderReference.md
 |   |-- MetadataConfigurationGuide.md
 |   |-- TblReportSequenceReference.md
 |   |-- Troubleshooting.md
@@ -478,12 +479,17 @@ Validate, in order:
 2. Sorting-table headers and counts
 3. `tblReportSequence` order
 4. Worksheet and spacing associations
-5. Header and footer allocations
-6. Hidden helper columns
-7. Formula-token replacement
-8. Totals and grand totals
-9. Chart source ranges
-10. Workbook recalculation and saved values
+5. Worksheet-header `Report` and `Tab` values
+6. Worksheet-header row numbers and merge ranges
+7. `beginSheet` is at least 10 for the Medicare implementation
+8. `beginSheet` is greater than the final worksheet-header row
+9. Header title, formulas, hyperlinks, and freeze behavior
+10. Repeating header and footer allocations
+11. Hidden helper columns
+12. Formula-token replacement
+13. Subtotals and grand totals
+14. Chart source ranges
+15. Workbook recalculation and saved values
 
 ## Known Constraints
 
