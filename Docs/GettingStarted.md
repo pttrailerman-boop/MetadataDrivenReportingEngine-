@@ -614,6 +614,7 @@ Confirm that the report-band starting row is greater than the final worksheet-he
 
 ```text
 beginSheet > final worksheet-header row
+If additional worksheet-header rows have been added, increase `beginSheet` accordingly.
 ```
 ### Destination table already exists
 
