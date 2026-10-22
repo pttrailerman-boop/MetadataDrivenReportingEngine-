@@ -677,11 +677,11 @@ After the first worksheet works:
 
 ## 20. Related Documentation
 
-- ../README.md
+- [Project README](../README.md)
 - [Architectural White Paper](WhitePaper.md)
 - [Report Header Reference](ReportHeaderReference.md)
 - [Metadata Configuration Guide](MetadataConfigurationGuide.md)
 - [`tblReportSequence` Reference](TblReportSequenceReference.md)
 - [Troubleshooting Guide](Troubleshooting.md)
-- WorkedExamples/MedicarePipeline.md
-- WorkedExamples/KPIPipeline.md
+- [Medicare Pipeline](WorkedExamples/MedicarePipeline.md)
+- [KPI Pipeline](WorkedExamples/KPIPipeline.md)
