@@ -403,9 +403,6 @@ MetadataDrivenReportingEngine/
 |   |-- modExportToExcel.txt
 |   |-- modCreateQdef.txt
 |   `-- mod_IsReportOpen.txt
-|-- SQL/
-|   |-- Medicare/
-|   `-- KPI/
 `-- Demo/
     |-- DemoKPI_ExcelWriter.xlsx
     |-- ReportKPI.accdb
