@@ -614,7 +614,7 @@ Confirm that the report-band starting row is greater than the final worksheet-he
 
 ```text
 beginSheet > final worksheet-header row
-
+```
 ### Destination table already exists
 
 The table-marker row is missing, uses the wrong name, or appears after the make-table query.
