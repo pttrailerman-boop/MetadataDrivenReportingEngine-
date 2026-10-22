@@ -371,8 +371,6 @@ MetadataDrivenReportingEngine/
     `-- ReportMedicareDemo.accdb
 ```
 
-Adjust the repository tree as files are added. Paths in this README assume the structure above.
-
 ## Running a Demo
 
 1. Download the desired `.accdb` demo and place it in a local folder.
