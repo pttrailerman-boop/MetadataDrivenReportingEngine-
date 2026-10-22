@@ -365,7 +365,7 @@ The following fields should be treated as section-wide and configured on the fir
 
 These settings apply to an H1 range bounded by the first and last visible Excel columns. Place the intended values on the first sorted metadata record.
 
-## 7.3 B Column-Heading Metadata
+## 8. B Column-Heading Metadata
 
 The B zone is the column-heading row immediately above the detail data.
 
@@ -413,11 +413,11 @@ The `_B_Bline` fields control the outer boundary spanning the visible heading ra
 
 These boundary settings are section-oriented. Configure them consistently on the authoritative first metadata record.
 
-## 8. B_D Detail-Region Metadata
+## 9. B_D Detail-Region Metadata
 
 The B_D zone formats the data rows for the current column.
 
-### 8.1 Detail formatting fields
+### 9.1 Detail formatting fields
 
 - `Alignment_Horiz_B_D`
 - `Alignment_Vert_B_D`
@@ -439,7 +439,7 @@ The B_D zone formats the data rows for the current column.
 
 Most of these fields are applied to the detail range in the current metadata record's Excel column.
 
-### 8.2 `Range_B_D`
+### 9.2 `Range_B_D`
 
 - **Behavior:** C
 - **Purpose:** Stores a detail formula template.
@@ -448,7 +448,7 @@ Most of these fields are applied to the detail range in the current metadata rec
 
 The renderer replaces `?` with the first detail row and assigns the resulting formula to the selected detail range. Excel adjusts relative references through the range.
 
-### 8.3 `MergeCenter_B_D`
+### 9.3 `MergeCenter_B_D`
 
 - **Behavior:** S within each detail row
 - **Purpose:** Defines a row-relative merge range.
@@ -458,7 +458,7 @@ The renderer loops through the detail rows, replaces `?` with the current row nu
 
 Use this feature cautiously. Merged detail cells can complicate sorting, filtering, copying, and later formula maintenance.
 
-### 8.4 Detail boundary fields
+### 9.4 Detail boundary fields
 
 The `_B_Bline_D` fields control the outer boundary around the full visible detail block:
 
@@ -470,7 +470,7 @@ The `_B_Bline_D` fields control the outer boundary around the full visible detai
 
 These should be treated as section-wide boundary settings.
 
-## 9. F1 Primary Footer Metadata
+## 10. F1 Primary Footer Metadata
 
 The F1 zone is the primary subtotal or summary row for each report band.
 
@@ -526,7 +526,7 @@ IFERROR(M?/L?,0)
 
 Treat the boundary fields as section-wide settings.
 
-## 10. F2 Extended-Footer Metadata
+## 11. F2 Extended-Footer Metadata
 
 The F2 zone supports additional positioned summary rows below F1.
 
@@ -598,11 +598,11 @@ Treat the following as section-wide settings on the first sorted metadata record
 
 The renderer finds the visible left and right boundaries before applying shared F2 fill and border behavior.
 
-## 11. Formula Tokens
+## 12. Formula Tokens
 
 The formula-token system allows one metadata expression to work in report bands with different physical row numbers.
 
-### 11.1 General rule
+### 12.1 General rule
 
 Store formulas without the leading equals sign:
 
@@ -612,7 +612,7 @@ SUM(K@:K#)
 
 The VBA adds `=` when assigning the formula to Excel.
 
-### 11.2 `?` in `Range_B_D`
+### 12.2 `?` in `Range_B_D`
 
 `?` is replaced with the first detail row, `Begin1`.
 
@@ -628,11 +628,11 @@ If the detail block begins at row 18, Excel initially receives:
 
 Excel then adjusts relative references through the selected detail range.
 
-### 11.3 `?` in `Range_F1`
+### 12.3 `?` in `Range_F1`
 
 In the F1 routine, `?` resolves to the row context defined by that footer calculation. Test the output when adapting a formula because the footer context differs from the B_D detail context.
 
-### 11.4 `?` in `MergeCenter_B_D`
+### 12.4 `?` in `MergeCenter_B_D`
 
 `?` is replaced with each current detail-row number while the renderer loops through the band.
 
@@ -648,7 +648,7 @@ A19:C19
 A20:C20
 ```
 
-### 11.5 `@` and `#` in `Range_F1`
+### 12.5 `@` and `#` in `Range_F1`
 
 - `@` represents the first detail row, `Begin1`.
 - `#` represents the final detail row, `End1`.
@@ -663,7 +663,7 @@ For rows 18 through 35, Excel receives:
 =SUM(K18:K35)
 ```
 
-## 12. Hidden Helper Columns
+## 13. Hidden Helper Columns
 
 A metadata record may define an Excel column that does not exist in the SQL source. The column can receive a formula and then be hidden with `Column_Hide`.
 
@@ -688,7 +688,7 @@ Prepared SQL fields
 
 Do not place business-critical filtering or grouping logic only in a hidden Excel column. Values required to define the recordset or group order belong in SQL.
 
-## 13. KPI Running-Count Pattern
+## 14. KPI Running-Count Pattern
 
 The KPI demo uses hidden helper columns to produce running values exposed in the extended footer.
 
@@ -713,7 +713,7 @@ This pattern supports report-wide accumulation across dynamically sized bands. A
 
 Always verify the actual value and criterion columns used by the current report. The formula above illustrates the pattern and may require different column letters in another worksheet.
 
-## 14. Header and Footer Allocation
+## 15. Header and Footer Allocation
 
 The renderer defines default allocations for primary and secondary headers and footers.
 
@@ -733,7 +733,7 @@ Before reducing an allocation:
 4. Review formula and copied-value placement.
 5. Test against several report bands.
 
-## 15. Grand-Total Metadata
+## 16. Grand-Total Metadata
 
 `tblGoodFieldName_G_Totals` defines the final report-level summary block.
 
@@ -757,7 +757,7 @@ When adapting grand totals:
 3. Confirm every formula references the intended final worksheet rows.
 4. Validate that hidden helper columns contain calculated values before the grand totals are evaluated.
 
-## 16. Active, Reserved, and Unimplemented Fields
+## 17. Active, Reserved, and Unimplemented Fields
 
 A field's presence in the table schema does not prove that the current VBA consumes it.
 
@@ -775,9 +775,9 @@ Treat these fields as **U, unused or unconfirmed**.
 
 Do not document them as active features until the renderer includes explicit code to read, apply, and test them.
 
-## 17. Common Configuration Mistakes
+## 18. Common Configuration Mistakes
 
-### 17.1 Putting a section-wide setting on a later row
+### 18.1 Putting a section-wide setting on a later row
 
 **Symptom:** The expected H1 merge, fill, row height, or border does not appear.
 
@@ -785,7 +785,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Move the intended section-wide value to the first record in `Sort` order.
 
-### 17.2 Hiding the authoritative first record
+### 18.2 Hiding the authoritative first record
 
 **Symptom:** The visible boundaries and shared properties appear inconsistent.
 
@@ -793,7 +793,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Prefer a visible first sorted record and use later hidden records for helper formulas.
 
-### 17.3 Storing formulas with `=`
+### 18.3 Storing formulas with `=`
 
 **Symptom:** Invalid or duplicated formula syntax.
 
@@ -801,7 +801,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Store `SUM(K@:K#)`, not `=SUM(K@:K#)`.
 
-### 17.4 Using the wrong token for the zone
+### 18.4 Using the wrong token for the zone
 
 **Symptom:** A formula points to the wrong row.
 
@@ -809,7 +809,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Test the formula in the specific metadata field where it will be used.
 
-### 17.5 Insufficient header or footer allocation
+### 18.5 Insufficient header or footer allocation
 
 **Symptom:** Overlapping labels, missing footer values, or misplaced formulas.
 
@@ -817,7 +817,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Increase the allocation or reduce the configured position.
 
-### 17.6 Using unimplemented metadata fields
+### 18.6 Using unimplemented metadata fields
 
 **Symptom:** A populated field has no effect.
 
@@ -825,7 +825,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Confirm implementation in `clsExport` before relying on the field.
 
-### 17.7 Incorrect source-column letter
+### 18.7 Incorrect source-column letter
 
 **Symptom:** H1 or F2 displays the wrong value.
 
@@ -833,7 +833,7 @@ Do not document them as active features until the renderer includes explicit cod
 
 **Correction:** Validate the final worksheet column map, not only the Access field order.
 
-## 18. Recommended Configuration Sequence
+## 19. Recommended Configuration Sequence
 
 Use this order when creating metadata for a new worksheet.
 
@@ -879,7 +879,7 @@ Use this order when creating metadata for a new worksheet.
 3. Verify calculation order.
 4. Verify the chart routines reference final worksheet ranges.
 
-## 19. Validation Checklist
+## 20. Validation Checklist
 
 Before accepting a configuration, verify:
 
@@ -899,7 +899,7 @@ Before accepting a configuration, verify:
 - [ ] The workbook is fully recalculated before save.
 - [ ] Reserved fields are not being treated as active features.
 
-## 20. Practical Formula Examples
+## 21. Practical Formula Examples
 
 ### Detail ratio
 
@@ -945,7 +945,7 @@ SUMIFS($K$1:INDEX(K:K,ROW()-1),$J$1:INDEX(J:J,ROW()-1),"<>Totals:")
 
 These examples are patterns, not universal formulas. Replace column letters and criteria with values appropriate to the target worksheet.
 
-## 21. Related Documentation
+## 22. Related Documentation
 
 - [Project README](../README.md)
 - [Architectural White Paper](WhitePaper.md)
