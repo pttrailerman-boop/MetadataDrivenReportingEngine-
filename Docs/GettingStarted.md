@@ -1,6 +1,6 @@
 # Getting Started
 
-[Back to project README](../README.md) | [Architectural White Paper](WhitePaper.md) | [Metadata Configuration Guide](MetadataConfigurationGuide.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md)
+[Back to project README](../README.md) | [Architectural White Paper](WhitePaper.md) | [Report Header Reference](ReportHeaderReference.md) | [Metadata Configuration Guide](MetadataConfigurationGuide.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md) | [Troubleshooting](Troubleshooting.md)
 
 ## Purpose
 
@@ -16,10 +16,11 @@ A basic worksheet configuration requires:
 2. A final worksheet source
 3. A sorting/grouping table
 4. Four ordered rows in `tblReportSequence`
-5. Worksheet metadata in `tblGoodFieldName_Report`
-6. Optional grand-total metadata in `tblGoodFieldName_G_Totals`
-7. A report registration row in `tblReports`
-8. Launcher and renderer modules
+5. Optional worksheet-level header metadata in `tblGoodFieldName_Header`
+6. Repeating report-band metadata in `tblGoodFieldName_Report`
+7. Optional grand-total metadata in `tblGoodFieldName_G_Totals`
+8. A report registration row in `tblReports`
+9. Launcher and renderer modules
 
 The standard flow is:
 
@@ -29,8 +30,10 @@ Prepared source
     -> sorting table
     -> tblReportSequence
     -> ADO recordset transfer
+    -> one-time worksheet header
     -> break calculation
-    -> metadata formatting
+    -> repeating report-band metadata
+    -> grand totals and charts
     -> standalone XLSX workbook
 ```
 
@@ -354,6 +357,61 @@ Before adding headers, formulas, and totals, verify that:
 - Hidden fields are hidden.
 - Group boundaries align with the sorting table.
 
+### 8.3 Configure the worksheet-level header
+
+If the worksheet requires a one-time report title or introductory area, copy a working `tblGoodFieldName_Header` configuration.
+
+The worksheet-level header can contain:
+
+- A report title and subtitle
+- Static explanatory text
+- Excel formulas
+- Public-source hyperlinks
+- Generated-by information
+- A generated date and time
+- Merged ranges
+- Fonts, fills, row heights, and borders
+- Freeze-below behavior
+
+The worksheet-level header is different from the repeating H1 report-band header:
+
+```text
+tblGoodFieldName_Header
+    -> rendered once at the top of the worksheet
+
+tblGoodFieldName_Report H1
+    -> rendered once for every report band
+```
+
+To configure a new worksheet header:
+
+1. Copy a working `tblGoodFieldName_Header` configuration.
+2. Change `Report` to the new report identifier.
+3. Change `Tab` to the target worksheet name.
+4. Replace the title, subtitle, formulas, hyperlinks, and generated-report information.
+5. Verify the configured header row numbers.
+6. Verify every merged range.
+7. Confirm that the report-band starting row is below the final worksheet-header row.
+8. Render the worksheet and validate the header before configuring the repeating H1 zone.
+
+The Medicare reference implementation requires report-band construction to begin at row 10 or later:
+
+```vb
+Const original = 2
+Const beginSheet = 10
+```
+
+`original` identifies the original starting position of the exported records before report-band rows are inserted.
+
+`beginSheet` identifies where the first generated report band begins. If `beginSheet` is too low, report-band construction can occupy the rows reserved for `tblGoodFieldName_Header`.
+
+Maintain this rule:
+
+```text
+beginSheet > final worksheet-header row
+```
+For complete field definitions and Medicare examples, see the [Report Header Reference](ReportHeaderReference.md).
+  
 ## 9. Configure the H1 Header
 
 Add H1 content only after the basic worksheet is stable.
