@@ -1,6 +1,7 @@
 # Metadata Configuration Guide
 
-[Back to project README](../README.md) | [Architectural White Paper](WhitePaper.md)
+[Back to project README](../README.md) | [Getting Started](GettingStarted.md) | [Report Header Reference](ReportHeaderReference.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md) | [Troubleshooting](Troubleshooting.md) | [Medicare Pipeline](WorkedExamples/MedicarePipeline.md) | [KPI Pipeline](WorkedExamples/KPIPipeline.md)
+
 
 ## Purpose
 
