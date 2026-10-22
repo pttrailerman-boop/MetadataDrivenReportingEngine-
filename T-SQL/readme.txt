@@ -1,1 +1,0 @@
-These are examples of the kinds of stored procedures I've worked with or created in the past at various companies.  They do not refer to any systems currently in production.  They help to highlight my skills in T-SQL. 
