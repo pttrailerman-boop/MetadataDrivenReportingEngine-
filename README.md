@@ -276,8 +276,10 @@ The required relationship is:
 beginSheet > final worksheet-header row
 ```
 For complete field definitions and examples, see the [Report Header Reference](Docs/ReportHeaderReference.md).
+
 Each ordinary report band contains several logical zones:
 ```text
+
 H1   Primary group header
 B    Body or column-heading row
 B_D  Detail-data rows
