@@ -530,7 +530,7 @@ Treat the boundary fields as section-wide settings.
 
 The F2 zone supports additional positioned summary rows below F1.
 
-### 10.1 Repeatable F2 item fields
+### 11.1 Repeatable F2 item fields
 
 #### `HeaderCol_F2_A`
 
@@ -582,7 +582,7 @@ The F2 zone supports additional positioned summary rows below F1.
 - `Wrap_Text_F2_AD`
 - `Underline_F2_AD`
 
-### 10.2 Section-wide F2 fields
+### 11.2 Section-wide F2 fields
 
 Treat the following as section-wide settings on the first sorted metadata record:
 
