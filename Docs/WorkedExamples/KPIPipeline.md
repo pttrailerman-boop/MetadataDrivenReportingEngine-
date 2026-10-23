@@ -476,6 +476,8 @@ A metadata row can:
 
 This separates visible report design from intermediate workbook calculations.
 
+![KPI helper columns and running calculations](../../screenshots/KPI_HelperColumns.png)
+
 ## 16. Running Footer Calculations
 
 The KPI demo uses running formulas that accumulate values above the current footer while excluding subtotal rows labeled `Totals:`.
