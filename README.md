@@ -425,11 +425,13 @@ MetadataDrivenReportingEngine/
 |   `-- WorkedExamples/
 |       |-- MedicarePipeline.md
 |       `-- KPIPipeline.md
-|-- Screenshots/
+|-- screenshots/
 |   |-- KPI_ReportManager.png
 |   |-- KPI_ReportWorkflow.png
+|   |-- KPI_HelperColumns.png
 |   |-- Medicare_ReportManager.png
-|   `-- Medicare_ReportWorkflow.png
+|   |-- Medicare_ReportWorkflow.png
+|   `-- Medicare_HelperColumns.png
 |-- VBA/
 |   |-- basBrowse.txt
 |   |-- clsCreateRecord.txt
