@@ -3,7 +3,7 @@
 
 [Back to project README](../README.md) | [Getting Started](GettingStarted.md) | [Report Header Reference](ReportHeaderReference.md) | [Metadata Configuration Guide](MetadataConfigurationGuide.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md) | [Troubleshooting](Troubleshooting.md) | [Medicare Pipeline](WorkedExamples/MedicarePipeline.md) | [KPI Pipeline](WorkedExamples/KPIPipeline.md)
 
-**Author:** Alex Fritts  
+**Author:** Alex F. 
 **Technology:** Microsoft Access, Access SQL, DAO, ADO, VBA, Excel COM automation  
 **Reference implementations:** Medicare reporting demo and KPI reporting demo
 
