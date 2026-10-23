@@ -27,8 +27,6 @@ End Function
 
 Function adhReplace(ByVal varvalue As Variant, ByVal strFind As String, ByVal strReplace As String) As Variant
 
-  
-    
     ' Replace all instances of strFind with strReplace in varValue.
     
     Dim intLenFind As Integer

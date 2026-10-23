@@ -1,7 +1,7 @@
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 Option Compare Database
 Option Explicit
 
@@ -135,6 +135,7 @@ Public Function OpenXL() As Boolean
   Dim rsTab  As DAO.Recordset
   Dim rsSpacingTab As DAO.Recordset
   Dim rsTableNameHolder As DAO.Recordset
+
 
   Set db = DBEngine(0)(0)
     
@@ -272,18 +273,14 @@ If rsTab.RecordCount > 0 Then
                            'call this function for the primary only
                            Call fn_break(rsTableNameHolder![queryname])
                            Call fn_applyFormat(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, bHasTotals)
-                           'Call fn_PivotChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
-                           Call fn_CreateChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
-                           Call fn_GrandTotalsOnChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName)
+                           'Call fn_PivotChart(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, 0, strTabName) example code only
+                           Call fn_ReportHeader(rsGRR_Report, rsgRR_Report_Desc, rsTableNameHolder, strTabName)
+                           Call CreateMedicareTop10Chart(rsTableNameHolder, strTabName)
+
                     End If
                         'end find all breaks--------------------------------------------
                 rsTab.MoveNext
     Wend
-    
-       
-                  'move the sheets around if you need to.
-                  'objExcel.Application.Sheets("Monthly_Chart").Select
-                  'objExcel.Application.ActiveSheet.Move Before:=objExcel.Application.ActiveWorkbook.Sheets("KPI_Special")
 
         
         If prpRender = True Then
@@ -302,8 +299,24 @@ If rsTab.RecordCount > 0 Then
         End If
         
 
+        
+        '-------------------------------------------------------------
+        'Complete all pending calculations before saving.
+        '
+        'This prevents Excel from saving formula cells as stale when
+        'the report was built with calculation temporarily set to
+        'manual for performance.
+        '-------------------------------------------------------------
+        objExcel.Application.Calculation = xlCalculationAutomatic
+        
+        objExcel.ActiveWorkbook.ForceFullCalculation = True
+        objExcel.Application.CalculateFullRebuild
+        
+        DoEvents
+        
         objExcel.Application.DisplayAlerts = False
-        objExcel.ActiveWorkbook.Close SaveChanges:=True
+        objExcel.ActiveWorkbook.Save
+        objExcel.ActiveWorkbook.Close SaveChanges:=False
         objExcel.Application.Quit
         
         OpenXL = True
@@ -315,7 +328,6 @@ If rsTab.RecordCount > 0 Then
                 're-open the workbook?
                ' objExcel.Workbooks.Open prpFileName, ReadOnly = False
 
-     
      Exit Function
 Else
     'rstab has no records
@@ -349,7 +361,8 @@ Dim slvl As String
 Dim lSumEnd As Long
 Dim lrow As Long
 Dim rsSortGroup_GT As DAO.Recordset
-'----header variables 1-------
+
+'----band header variables 1-------
 Dim vAlignment, vAlignment_2 As Long
 Dim hAlignment, hAlignment_2 As Long
 
@@ -381,12 +394,13 @@ Dim dHeadInsert3 As String
 Set db = DBEngine(0)(0)
 
 If i = 0 Then
-iGT = 0
+iGT = 0 ' called recursively we would end up re-running grand totals again
+
 rsGRReport.Requery
 rsGRReport.MoveFirst
 
-'clean up-----report is always at A1 need to remove false headers and shift to right--------------------------------------
-'insert columns on left to line up report with first column in report.
+'clean up-----report is always at A1 need to remove false headers and shift to right--------You can set tblGoodFieldName_Report, G_totals, Header to start on any letter--------------
+'insert columns on left to line up report with first column in report.   You don't have to start with A Column.
 intCol = ColLet2Num(rsGRReport![Letter]) - ColLet2Num("A")
 If intCol > 0 Then
     objExcel.Application.Columns("A:A").Select
@@ -458,7 +472,7 @@ While rsGRReport.EOF = False
                 Case Else
                     vAlignment = -4108
            End Select
-           Select Case rsGRReport![Underline_h1_A]
+           Select Case rsGRReport![Underline_H1_A]
                 Case True
                     lUnderline = 2
                 Case False
@@ -509,26 +523,26 @@ While rsGRReport.EOF = False
 '---------------------------------------------------------------------------------------------------------------------
 '---------------------------------------------------------------------------------------------------------------------
         'insert data for header  section 1
-        dHeadInsert = IIf(IsNull(rsGRReport![fieldname_h1_A]), "", rsGRReport![fieldname_h1_A]) 'evaluate equation
+        dHeadInsert = IIf(IsNull(rsGRReport![FieldName_H1_A]), "", rsGRReport![FieldName_H1_A]) 'evaluate equation
         posAdd_H = IIf(IsNull(rsGRReport![position_h1_a]), 0, rsGRReport![position_h1_a])
-        sFont = IIf(IsNull(rsGRReport![font_h1_a]), "", rsGRReport![font_h1_a])
+        sFont = IIf(IsNull(rsGRReport![Font_H1_A]), "", rsGRReport![Font_H1_A])
         sFont_2 = IIf(IsNull(rsGRReport![font_h1_ad]), "", rsGRReport![font_h1_ad])
-        sFontStyle = IIf(IsNull(rsGRReport![font_style_h1_a]), "", rsGRReport![font_style_h1_a])
+        sFontStyle = IIf(IsNull(rsGRReport![Font_Style_H1_A]), "", rsGRReport![Font_Style_H1_A])
         sFontStyle_2 = IIf(IsNull(rsGRReport![font_style_h1_ad]), "", rsGRReport![font_style_h1_ad])
-        dFontSize = IIf(IsNull(rsGRReport![font_size_h1_a]), 10, rsGRReport![font_size_h1_a])
+        dFontSize = IIf(IsNull(rsGRReport![Font_Size_H1_A]), 10, rsGRReport![Font_Size_H1_A])
         dFontSize_2 = IIf(IsNull(rsGRReport![font_size_h1_ad]), 10, rsGRReport![font_size_h1_ad])
-        bWrapText = IIf(IsNull(rsGRReport![wrap_text_h1_a]), False, rsGRReport![wrap_text_h1_a])
+        bWrapText = IIf(IsNull(rsGRReport![Wrap_Text_H1_A]), False, rsGRReport![Wrap_Text_H1_A])
         bWrapText_2 = IIf(IsNull(rsGRReport![wrap_text_h1_ad]), False, rsGRReport![wrap_text_h1_ad])
-        sFormat = IIf(IsNull(rsGRReport![format_H1_a]), "General", rsGRReport![format_H1_a])
+        sFormat = IIf(IsNull(rsGRReport![Format_H1_A]), "General", rsGRReport![Format_H1_A])
         sFormat_2 = IIf(IsNull(rsGRReport![format_H1_ad]), "General", rsGRReport![format_H1_ad])
 
                 If rsGRReport![HeaderCol_H1_a] = True Then
                     If dHeadInsert <> "" Then
                         'add 1 then add 2
-                       objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1] + posAdd_H)), ColLet2Num(rsGRReport![Letter])).Value = _
                        dHeadInsert
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H) & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H)
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H) & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -544,10 +558,10 @@ While rsGRReport.EOF = False
                             End With
                             objExcel.Application.Selection.NumberFormat = sFormat
                             
-                       objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H) + 1, ColLet2Num(rsGRReport![Letter])) = _
-                       objExcel.ActiveSheet.Cells(rssortgroup![begin1], ColLet2Num(rsGRReport![Add_Name_From_Data_H1_A]))
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H) + 1 & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H) + 1
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H) + 1, ColLet2Num(rsGRReport![Letter])) = _
+                       objExcel.ActiveSheet.Cells(CLng(rssortgroup![begin1]), ColLet2Num(rsGRReport![Add_Name_From_Data_H1_A]))
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H) + 1 & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H) + 1
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -564,10 +578,10 @@ While rsGRReport.EOF = False
                             objExcel.Application.Selection.NumberFormat = sFormat_2
                         Else
                         'just use from data
-                       objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(rsGRReport![Letter])) = _
-                       objExcel.ActiveSheet.Cells(rssortgroup![begin1], ColLet2Num(rsGRReport![Add_Name_From_Data_H1_A]))
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H) & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H)
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H), ColLet2Num(rsGRReport![Letter])) = _
+                       objExcel.ActiveSheet.Cells(CLng(rssortgroup![begin1]), ColLet2Num(rsGRReport![Add_Name_From_Data_H1_A]))
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H) & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -585,10 +599,10 @@ While rsGRReport.EOF = False
                     End If
                 Else
                  'use dHeadInsert
-                       objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
+                       objExcel.ActiveSheet.Cells((rssortgroup![Head_b_1] + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
                        dHeadInsert
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H) & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![head_B_1] + posAdd_H)
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H) & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Head_b_1]) + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -635,21 +649,21 @@ While rsGRReport.EOF = False
                 If rsGRReport![HeaderCol_H1_a] = True Then
                     posAdd_H = IIf(IsNull(rsGRReport![position_h1_a]), 0, rsGRReport![position_h1_a])
                     dHeadInsert = dHeadInsert & "  " & _
-                    objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(rsGRReport![Letter]))
-                    objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(rsGRReport![Letter])).ClearContents
+                    objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H), ColLet2Num(rsGRReport![Letter]))
+                    objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H), ColLet2Num(rsGRReport![Letter])).ClearContents
                     'data
                     dHeadInsert2 = dHeadInsert2 & "  " & _
-                    objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H + 1), ColLet2Num(rsGRReport![Letter]))
-                    objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H + 1), ColLet2Num(rsGRReport![Letter])).ClearContents
+                    objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H + 1), ColLet2Num(rsGRReport![Letter]))
+                    objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H + 1), ColLet2Num(rsGRReport![Letter])).ClearContents
                  End If
               rsGRReport.MoveNext
             Wend
             
-            objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert)
-            objExcel.ActiveSheet.Cells((rssortgroup![head_B_1] + posAdd_H + 1), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert2)
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert)
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_b_1]) + posAdd_H + 1), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert2)
                 
-                bRk2 = hBeginLetter & (rssortgroup![head_B_1] + posAdd_H) & ":" & _
-                         hEndLetter & (rssortgroup![head_B_1] + posAdd_H)
+                bRk2 = hBeginLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H) & ":" & _
+                         hEndLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H)
                      objExcel.Application.Range(bRk2).Select
                        With objExcel.Application.Selection
                          .HorizontalAlignment = -4108
@@ -657,8 +671,8 @@ While rsGRReport.EOF = False
                          .WrapText = True
                          .MergeCells = True
                       End With
-                bRk2 = hBeginLetter & (rssortgroup![head_B_1] + posAdd_H) + 1 & ":" & _
-                         hEndLetter & (rssortgroup![head_B_1] + posAdd_H) + 1
+                bRk2 = hBeginLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H) + 1 & ":" & _
+                         hEndLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H) + 1
                       objExcel.Application.Range(bRk2).Select
                        With objExcel.Application.Selection
                          .HorizontalAlignment = -4108
@@ -696,8 +710,8 @@ Select Case rsGRReport![ColorIndex_H1]
     End Select
     posAdd_H = 1
 hBeginLetter = rsGRReport![Letter]
-bRk2 = hBeginLetter & (rssortgroup![head_B_1] + posAdd_H - 1) & ":" & _
-hEndLetter & (rssortgroup![Head_E_1] - 1)
+bRk2 = hBeginLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H - 1) & ":" & _
+hEndLetter & (CLng(rssortgroup![Head_E_1]) - 1)
   
     objExcel.Application.Range(bRk2).Select
         
@@ -738,8 +752,8 @@ hEndLetter & (rssortgroup![Head_E_1] - 1)
     Wend
     
     '-------lines------------------------------------------------------------------------------
-    bRk2 = hBeginLetter & (rssortgroup![head_B_1] + posAdd_H - 1) & ":" & _
-    hEndLetter & (rssortgroup![Head_E_1] - 1)
+    bRk2 = hBeginLetter & (CLng(rssortgroup![Head_b_1]) + posAdd_H - 1) & ":" & _
+    hEndLetter & (CLng(rssortgroup![Head_E_1]) - 1)
     objExcel.Application.Range(bRk2).Select
      rsGRReport.MoveFirst
     If rsGRReport![LineTop_H1] = True Then
@@ -749,21 +763,21 @@ hEndLetter & (rssortgroup![Head_E_1] - 1)
         .ColorIndex = xlAutomatic
         End With
     End If
-    If rsGRReport![linebottom_H1] = True Then
+    If rsGRReport![LineBottom_H1] = True Then
     With objExcel.Application.Selection.Borders(xlEdgeBottom)
         .LineStyle = xlContinuous
         .Weight = lLineWeight
         .ColorIndex = xlAutomatic
     End With
     End If
-     If rsGRReport![Lineleft_H1] = True Then
+     If rsGRReport![LineLeft_H1] = True Then
         With objExcel.Application.Selection.Borders(xlEdgeLeft)
         .LineStyle = xlContinuous
         .Weight = lLineWeight
         .ColorIndex = xlAutomatic
         End With
     End If
-     If rsGRReport![Lineright_H1] = True Then
+     If rsGRReport![LineRight_H1] = True Then
         With objExcel.Application.Selection.Borders(xlEdgeRight)
         .LineStyle = xlContinuous
         .Weight = lLineWeight
@@ -794,20 +808,21 @@ hEndLetter & (rssortgroup![Head_E_1] - 1)
  'headers for the body
         rsGRReport.MoveFirst
         'row height for body
-            objExcel.ActiveSheet.Rows(rssortgroup![Head_E_1] & ":" & rssortgroup![Head_E_1]).RowHeight = _
-            rsGRReport![Row_Height_B]
+    
+            objExcel.ActiveSheet.Rows(CLng(rssortgroup![Head_E_1]) & ":" & CLng(rssortgroup![Head_E_1])).RowHeight = _
+            CDbl(rsGRReport![Row_Height_B])
             
         While rsGRReport.EOF = False
         'Alternative VALUES
             If IsNull(rsGRReport![Add_Name_From_Data_B]) Or rsGRReport![Add_Name_From_Data_B] = "" Then
-              objExcel.ActiveSheet.Cells((rssortgroup![Head_E_1]), ColLet2Num(rsGRReport![Letter])).Value = rsGRReport![FieldName_B]
+              objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_E_1])), ColLet2Num(rsGRReport![Letter])).Value = rsGRReport![FieldName_B]
             Else
-            objExcel.ActiveSheet.Cells((rssortgroup![Head_E_1]), ColLet2Num(rsGRReport![Letter])).Value = _
-            objExcel.ActiveSheet.Cells((rssortgroup![begin1]), ColLet2Num(rsGRReport![Add_Name_From_Data_B])).Value
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![Head_E_1])), ColLet2Num(rsGRReport![Letter])).Value = _
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![begin1])), ColLet2Num(rsGRReport![Add_Name_From_Data_B])).Value
             End If
          'FORMAT
 
-            objExcel.ActiveSheet.Range(rsGRReport![Letter] & rssortgroup![Head_E_1]).Select
+            objExcel.ActiveSheet.Range(rsGRReport![Letter] & CLng(rssortgroup![Head_E_1])).Select
             Select Case rsGRReport![LineWeight_B]
                 Case "Thin"
                     lLineWeight = 2
@@ -956,8 +971,8 @@ While rsGRReport.EOF = False
         Case "Thick"
             lLineWeight = 4
     End Select
-    bRk2 = hBeginLetter & (rssortgroup![Head_E_1]) & ":" & _
-            hEndLetter & (rssortgroup![Head_E_1])
+    bRk2 = hBeginLetter & (CLng(rssortgroup![Head_E_1])) & ":" & _
+            hEndLetter & (CLng(rssortgroup![Head_E_1]))
             objExcel.Application.Range(bRk2).Select
     If rsGRReport![LineTop_B_Bline] = True Then
           With objExcel.Application.Selection.Borders(xlEdgeTop)
@@ -997,8 +1012,8 @@ rsGRReport.MoveFirst
             hBeginLetter = rsGRReport![Letter]
             hEndLetter = rsGRReport![Letter]
         
-                  bRk2 = hBeginLetter & (rssortgroup![begin1]) & ":" & _
-                         hEndLetter & (rssortgroup![End1])
+                  bRk2 = hBeginLetter & (CLng(rssortgroup![begin1])) & ":" & _
+                         hEndLetter & (CLng(rssortgroup![End1]))
                    objExcel.Application.Range(bRk2).Select
                     Select Case rsGRReport![LineWeight_B_D]
                         Case "Thin"
@@ -1121,7 +1136,7 @@ rsGRReport.MoveFirst
                             End With
                         End If
                         
-                        If rssortgroup![End1] - rssortgroup![begin1] > 0 Then
+                        If CLng(rssortgroup![End1]) - CLng(rssortgroup![begin1]) > 0 Then
                             If rsGRReport![LineHoriz_B_D] = True Then
                                 With objExcel.Application.Selection.Borders(xlInsideHorizontal)
                                 .LineStyle = xlContinuous
@@ -1132,9 +1147,27 @@ rsGRReport.MoveFirst
                         End If
                         
                     If rsGRReport![range_B_D] <> "" Then
-                        strFormula = adhReplace(rsGRReport![range_B_D], "?", rssortgroup![begin1])
+                        strFormula = adhReplace(rsGRReport![range_B_D], "?", CLng(rssortgroup![begin1]))
                         objExcel.Application.Selection.Formula = "=" & strFormula
                     End If
+
+'-----------------------the juice isn't worth the squeeze on this one, fighting excels inconsistent formula
+'                            If Nz(rsGRReport![range_B_D], "") <> "" Then
+'
+'                                strFormula = adhReplace(rsGRReport![range_B_D], "?", CLng(rssortgroup![begin1]))
+'
+'                                     With objExcel.Application.Selection
+'                                        .Formula = "=" & strFormula
+'                                        .Calculate
+'                                        For Each objCell In .Cells
+'                                            If objCell.Errors.Item(4).Value = True Then
+'                                                objCell.Errors.Item(4).Ignore = True
+'                                            End If
+'                                        Next objCell
+'                                    End With
+'                            End If
+'---------------------------------------------------------------------------------------------------------
+
         rsGRReport.MoveNext
     Wend
 'End Headers for the body--------------------------------------------------
@@ -1165,8 +1198,8 @@ rsGRReport.MoveFirst
             lLineWeight = 4
     End Select
     'select range
-    bRk2 = hBeginLetter & (rssortgroup![begin1]) & ":" & _
-            hEndLetter & (rssortgroup![End1])
+    bRk2 = hBeginLetter & (CLng(rssortgroup![begin1])) & ":" & _
+            hEndLetter & (CLng(rssortgroup![End1]))
             objExcel.Application.Range(bRk2).Select
         If rsGRReport![LineTop_B_Bline_D] = True Then
           With objExcel.Application.Selection.Borders(xlEdgeTop)
@@ -1199,18 +1232,21 @@ rsGRReport.MoveFirst
         
         'row height
         rsGRReport.MoveFirst
-        objExcel.ActiveSheet.Rows(rssortgroup![begin1] & ":" & rssortgroup![End1]).RowHeight = _
+        objExcel.ActiveSheet.Rows(CLng(rssortgroup![begin1]) & ":" & CLng(rssortgroup![End1])).RowHeight = _
             rsGRReport![Row_Height_B_D]
 'special case for reports where the body of data needs to mergeCenter! - left allign only
     If rsGRReport![MergeCenter_B_D] <> "" Then
-        For x = rssortgroup![begin1] To rssortgroup![End1]
+        For x = CLng(rssortgroup![begin1]) To CLng(rssortgroup![End1])
             bRk2 = adhReplace(rsGRReport![MergeCenter_B_D], "?", x)
             objExcel.Application.Range(bRk2).Select
                       With objExcel.Application.Selection
                          .HorizontalAlignment = -4131
                          .VerticalAlignment = -4108
                          .WrapText = True
+                         
+                         objExcel.Application.DisplayAlerts = False
                          .MergeCells = True
+                         objExcel.Application.DisplayAlerts = True
                       End With
                    
         Next x
@@ -1222,20 +1258,20 @@ rsGRReport.MoveFirst
  '-----------------------------------------------------------------------------------------------------------------
          rsGRReport.MoveFirst
         'row height for body
-            objExcel.ActiveSheet.Rows(rssortgroup![Sum_Beg_1] & ":" & rssortgroup![Sum_Beg_1]).RowHeight = _
+            objExcel.ActiveSheet.Rows(CLng(rssortgroup![Sum_Beg_1]) & ":" & CLng(rssortgroup![Sum_Beg_1])).RowHeight = _
             rsGRReport![Row_Height_B]
             
         While rsGRReport.EOF = False
         'Alternative VALUES
             If IsNull(rsGRReport![Add_Name_From_Data_F1]) Or rsGRReport![Add_Name_From_Data_F1] = "" Then
-              objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1]), ColLet2Num(rsGRReport![Letter])).Value = rsGRReport![FieldName_F1]
+              objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1])), ColLet2Num(rsGRReport![Letter])).Value = rsGRReport![FieldName_F1]
             Else
-            objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1]), ColLet2Num(rsGRReport![Letter])).Value = _
-            objExcel.ActiveSheet.Cells((rssortgroup![End1]), ColLet2Num(rsGRReport![Add_Name_From_Data_F1])).Value
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1])), ColLet2Num(rsGRReport![Letter])).Value = _
+            objExcel.ActiveSheet.Cells((CLng(rssortgroup![End1])), ColLet2Num(rsGRReport![Add_Name_From_Data_F1])).Value
             End If
          'FORMAT
 
-            objExcel.ActiveSheet.Range(rsGRReport![Letter] & rssortgroup![Sum_Beg_1]).Select
+            objExcel.ActiveSheet.Range(rsGRReport![Letter] & CLng(rssortgroup![Sum_Beg_1])).Select
             Select Case rsGRReport![LineWeight_F1]
                 Case "Thin"
                     lLineWeight = 2
@@ -1359,13 +1395,13 @@ rsGRReport.MoveFirst
             
             'horizontal footer calculation
             If rsGRReport![range_f1] <> "" And InStr(1, rsGRReport![range_f1], "?") > 0 Then
-                strFormula = adhReplace(rsGRReport![range_f1], "?", rssortgroup![End1] + 1)
+                strFormula = adhReplace(rsGRReport![range_f1], "?", CLng(rssortgroup![End1]) + 1)
                 objExcel.Application.Selection.Formula = "=" & strFormula
             End If
             'vertical footer calculation
             If rsGRReport![range_f1] <> "" And InStr(1, rsGRReport![range_f1], "@") > 0 Then
-                strFormula = adhReplace(rsGRReport![range_f1], "@", rssortgroup![begin1])
-                strFormula = adhReplace(strFormula, "#", rssortgroup![End1])
+                strFormula = adhReplace(rsGRReport![range_f1], "@", CLng(rssortgroup![begin1]))
+                strFormula = adhReplace(strFormula, "#", CLng(rssortgroup![End1]))
                 objExcel.Application.Selection.Formula = "=" & strFormula
             End If
             
@@ -1399,8 +1435,8 @@ rsGRReport.MoveFirst
         Case "Thick"
             lLineWeight = 4
     End Select
-    bRk2 = hBeginLetter & (rssortgroup![Sum_Beg_1]) & ":" & _
-            hEndLetter & (rssortgroup![Sum_Beg_1])
+    bRk2 = hBeginLetter & (CLng(rssortgroup![Sum_Beg_1])) & ":" & _
+            hEndLetter & (CLng(rssortgroup![Sum_Beg_1]))
             objExcel.Application.Range(bRk2).Select
         If rsGRReport![LineTop_F1_Bline] = True Then
           With objExcel.Application.Selection.Borders(xlEdgeTop)
@@ -1527,10 +1563,10 @@ rsGRReport.MoveFirst
         End If
                 If rsGRReport![HeaderCol_F2_A] = True Then
                     If dHeadInsert <> "" Then
-                       objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
                        dHeadInsert
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H) & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H)
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -1546,10 +1582,10 @@ rsGRReport.MoveFirst
                             End With
                         objExcel.Application.Selection.NumberFormat = sFormat
                         
-                       objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H) + 1, ColLet2Num(rsGRReport![Letter])) = _
-                       objExcel.ActiveSheet.Cells(rssortgroup![End1] + iGT, ColLet2Num(rsGRReport![Add_Name_From_Data_F2_A]))
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H) + 1 & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H) + 1
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) + 1, ColLet2Num(rsGRReport![Letter])) = _
+                       objExcel.ActiveSheet.Cells(CLng(rssortgroup![End1]) + iGT, ColLet2Num(rsGRReport![Add_Name_From_Data_F2_A]))
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) + 1 & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) + 1
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -1567,10 +1603,10 @@ rsGRReport.MoveFirst
                         
                         Else
                         'just use from data
-                       objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])) = _
-                       objExcel.ActiveSheet.Cells(rssortgroup![End1] + iGT, ColLet2Num(rsGRReport![Add_Name_From_Data_F2_A]))
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H) & ":" & _
-                              rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H)
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])) = _
+                       objExcel.ActiveSheet.Cells(CLng(rssortgroup![End1]) + iGT, ColLet2Num(rsGRReport![Add_Name_From_Data_F2_A]))
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) & ":" & _
+                              rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -1588,10 +1624,10 @@ rsGRReport.MoveFirst
                     End If
                 Else
                  'use dHeadInsert
-                       objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
+                       objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).Value = _
                        dHeadInsert
-                       bRk2 = rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H) & ":" & _
-                                rsGRReport![Letter] & (rssortgroup![Sum_Beg_1] + 1 + posAdd_H)
+                       bRk2 = rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H) & ":" & _
+                                rsGRReport![Letter] & (CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H)
                             objExcel.Application.Range(bRk2).Select
                             With objExcel.Application.Selection
                                 .HorizontalAlignment = hAlignment
@@ -1639,31 +1675,31 @@ rsGRReport.MoveFirst
                   Select Case posAdd_H
                     Case 0
                         dHeadInsert = dHeadInsert & " " & _
-                        objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])) & " "
-                        objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).ClearContents
+                        objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])) & " "
+                        objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + 1 + posAdd_H), ColLet2Num(rsGRReport![Letter])).ClearContents
                     Case 1
                         dHeadInsert2 = dHeadInsert2 & " " & _
-                        objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 2), ColLet2Num(rsGRReport![Letter]))
+                        objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 2), ColLet2Num(rsGRReport![Letter]))
                         objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 2), ColLet2Num(rsGRReport![Letter])).ClearContents
                     Case 2
                         dHeadInsert3 = dHeadInsert3 & " " & _
-                        objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 3), ColLet2Num(rsGRReport![Letter]))
-                        objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 3), ColLet2Num(rsGRReport![Letter])).ClearContents
+                        objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 3), ColLet2Num(rsGRReport![Letter]))
+                        objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 3), ColLet2Num(rsGRReport![Letter])).ClearContents
                    End Select
                  End If
               rsGRReport.MoveNext
             Wend
             If dHeadInsert <> "" Then
-                objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 1), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert)
+                objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 1), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert)
             End If
             If dHeadInsert2 <> "" Then
-                objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 2), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert2)
+                objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 2), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert2)
             End If
             If dHeadInsert3 <> "" Then
-                objExcel.ActiveSheet.Cells((rssortgroup![Sum_Beg_1] + posAdd_H + 3), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert3)
+                objExcel.ActiveSheet.Cells((CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 3), ColLet2Num(hBeginLetter)) = Trim(dHeadInsert3)
             End If
-                bRk2 = hBeginLetter & (rssortgroup![Sum_Beg_1] + posAdd_H + 1) & ":" & _
-                         hEndLetter & (rssortgroup![Sum_Beg_1] + posAdd_H + 1)
+                bRk2 = hBeginLetter & (CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 1) & ":" & _
+                         hEndLetter & (CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 1)
                      objExcel.Application.Range(bRk2).Select
                        With objExcel.Application.Selection
                          .HorizontalAlignment = -4108
@@ -1671,8 +1707,8 @@ rsGRReport.MoveFirst
                          .WrapText = True
                          .MergeCells = True
                       End With
-                bRk2 = hBeginLetter & (rssortgroup![Sum_Beg_1] + posAdd_H + 2) & ":" & _
-                         hEndLetter & (rssortgroup![Sum_Beg_1] + posAdd_H + 2)
+                bRk2 = hBeginLetter & (CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 2) & ":" & _
+                         hEndLetter & (CLng(rssortgroup![Sum_Beg_1]) + posAdd_H + 2)
                       objExcel.Application.Range(bRk2).Select
                        With objExcel.Application.Selection
                          .HorizontalAlignment = -4108
@@ -1710,8 +1746,8 @@ Select Case rsGRReport![ColorIndex_F2]
     End Select
     
 hBeginLetter = rsGRReport![Letter]
-bRk2 = hBeginLetter & (rssortgroup![Sum_Beg_1] + 1) & ":" & _
-hEndLetter & (rssortgroup![Sum_End_1] - 1)
+bRk2 = hBeginLetter & (CLng(rssortgroup![Sum_Beg_1]) + 1) & ":" & _
+hEndLetter & (CLng(rssortgroup![Sum_End_1]) - 1)
   
     objExcel.Application.Range(bRk2).Select
         
@@ -1752,7 +1788,7 @@ hEndLetter & (rssortgroup![Sum_End_1] - 1)
     Wend
     
     '-------lines------------------------------------------------------------------------------
-    bRk2 = hBeginLetter & (rssortgroup![Sum_Beg_1] + 1) & ":" & _
+    bRk2 = hBeginLetter & (CLng(rssortgroup![Sum_Beg_1]) + 1) & ":" & _
     hEndLetter & (rssortgroup![Sum_End_1] - 1)
     objExcel.Application.Range(bRk2).Select
      rsGRReport.MoveFirst
@@ -1787,13 +1823,21 @@ hEndLetter & (rssortgroup![Sum_End_1] - 1)
 '----------------End Footer 2-----------(extended-summary)-------------------------------------------------------------------------------------------
 '----------------------------------------------------------------------------------------------------------------------------------------------------
 '--------------------------------------------------------------------------End all formating---------------------------------------------------------
-        
+           
          rssortgroup.MoveNext
+         
+'          If rssortgroup.EOF = True Then
+'                Debug.Print "rssortgroup is EOF"
+'           Else
+'               Debug.Print "rssgroup is not EOF"
+'           End If
     Wend
 '-----------------------------------------end report-formating-code-------------------------------------------------------------------------------------------------
 '-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 '-------------------------------------------------end---------------------------------------------------------------------------------------------------------------
 '-----------------------------------------Begin---Grand--totals-----------------------------------------------------------------------------------------------------
+
+
     If i = 0 And bHasTotals = True Then
     rssortgroup.MoveFirst
     rssortgroup.MoveLast
@@ -1809,7 +1853,7 @@ hEndLetter & (rssortgroup![Sum_End_1] - 1)
         rssortgroup![Description1] = "Grand Totals"
         rssortgroup![Level] = slvl
         rssortgroup![count1] = rsCount
-        rssortgroup![head_B_1] = lSumEnd
+        rssortgroup![Head_b_1] = lSumEnd
         rssortgroup![Head_E_1] = lSumEnd + prpHead_1 - 1
         rssortgroup![begin1] = lSumEnd + prpHead_1
         rssortgroup![End1] = lSumEnd + prpHead_1 + rsCount
@@ -1853,12 +1897,878 @@ hEndLetter & (rssortgroup![Sum_End_1] - 1)
         rsGRReport.Requery
         rsgRR_Report_Desc.Requery
         iGT = 1
-           Call fn_applyFormat(rsGRReport, rsgRR_Report_Desc, rsStrTable, 1, bHasTotals) 'call recursively
+               
+            Call fn_applyFormat(rsGRReport, rsgRR_Report_Desc, rsStrTable, 1, bHasTotals) 'call recursively
     Else
     
     End If
 
 End Function
+
+Private Function fn_ReportHeader(ByRef rsGRR_Report As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, strTabName As String)
+
+    Dim rssortgroup As DAO.Recordset
+    Dim db As DAO.Database
+
+    Dim rsCount As Long
+    Dim slvl As String
+    Dim lSumEnd As Long
+    Dim lLineWeight As Long
+    Dim lngHeaderRow As Long
+
+    Dim sqlString As String
+    Dim strFormula As String
+    Dim strLetter As String
+    Dim strTargetRange As String
+    Dim strMergeRange As String
+    
+    Dim bFreezeBelow As Boolean
+    
+    Dim objTargetRange As Excel.Range
+
+    Set db = DBEngine(0)(0)
+    Set rssortgroup = db.OpenRecordset("Select * From " & prpSortingGrouping & " Where " & prpSortingGrouping & ".[Level] = " & """" & rsStrTable![queryname] & """", dbOpenDynaset)
+        rssortgroup.Requery
+
+    rssortgroup.MoveLast
+        rsSort = rssortgroup![Sort1]
+    rssortgroup.MoveFirst
+
+    slvl = rssortgroup![Level]
+    lSumEnd = rssortgroup![Head_b_1] 'this is where the first group header is
+    rssortgroup.MoveFirst
+ 
+    rsCount = lSumEnd - 1
+    
+    If rsCount >= 5 Then ' any thing less than 5 means not enough room for a report header
+                         ' see function fn_FindBreaks, setting: Const beginSheet = 10
+    
+    rssortgroup.MoveLast
+
+    rssortgroup.AddNew
+        rssortgroup![Sort1] = rsSort + 1
+        rssortgroup![Description1] = "Report Header"
+        rssortgroup![Level] = slvl
+        rssortgroup![count1] = rsCount
+        rssortgroup![Head_b_1] = (lSumEnd - lSumEnd) + 1
+        rssortgroup![Head_E_1] = lSumEnd - 1
+        rssortgroup![begin1] = (lSumEnd - lSumEnd) + 1
+        rssortgroup![End1] = lSumEnd - 1
+    rssortgroup.Update
+      
+
+        Let prpReportingRules = "tblGoodFieldName_Header"
+        
+        Set rsGRR_Report = db.OpenRecordset( _
+        "SELECT " & prpReportingRules & ".* " & _
+        "FROM " & prpReportingRules & " " & _
+        "WHERE " & prpReportingRules & ".Tab = " & _
+            """" & Replace(sTab, """", """""") & """ " & _
+        "AND " & prpReportingRules & ".Report = " & _
+            """" & Replace(sReport, """", """""") & """ " & _
+        "AND (" & _
+            prpReportingRules & ".HeaderRow_H1_A Is Not Null " & _
+            "OR " & _
+            prpReportingRules & ".HeaderRow_H1 Is Not Null" & _
+        ") " & _
+        "ORDER BY " & prpReportingRules & ".Sort;", _
+        dbOpenSnapshot)
+            
+    
+    
+    rsGRR_Report.MoveFirst
+
+bFreezeBelow = False
+rsGRR_Report.MoveFirst
+
+Do While Not rsGRR_Report.EOF
+    strLetter = Trim$(Nz( _
+        rsGRR_Report!Letter, _
+        vbNullString))
+        
+    'Capture the worksheet-level freeze instruction.
+    If CBool(Nz( _
+        rsGRR_Report!FreezeBelow_YN, _
+        False)) Then
+
+        bFreezeBelow = True
+
+    End If
+        
+    If Len(strLetter) = 0 Then
+        Debug.Print _
+            "Header metadata skipped because Letter is blank. Sort: "; _
+            Nz(rsGRR_Report!Sort, 0)
+        GoTo NextHeaderRecord
+    End If
+
+    If CBool(Nz( _
+        rsGRR_Report!FreezeBelow_YN, _
+        False)) Then
+        bFreezeBelow = True
+    End If
+
+    '=========================================================
+    ' H1_A
+    '
+    ' Report title and related content in rows 1 or 2.
+    '=========================================================
+    If Not IsNull(rsGRR_Report!HeaderRow_H1_A) Then
+        lngHeaderRow = CLng( _
+            rsGRR_Report!HeaderRow_H1_A)
+        If lngHeaderRow >= 1 And lngHeaderRow <= 2 Then
+            strMergeRange = Trim$(Nz( _
+                rsGRR_Report!MergeRange_H1_A, _
+                vbNullString))
+            '-------------------------------------------------
+            'Determine the target range.
+            '-------------------------------------------------
+            If Len(strMergeRange) > 0 Then
+                strTargetRange = adhReplace( _
+                    strMergeRange, _
+                    "?", _
+                    lngHeaderRow)
+            Else
+               strTargetRange = _
+                    strLetter & CStr(lngHeaderRow)
+            End If
+
+            Debug.Print _
+                "H1_A target: "; _
+                strTargetRange
+            Set objTargetRange = _
+                objExcel.ActiveSheet.Range(strTargetRange)
+            '-------------------------------------------------
+            'Merge before writing the displayed content.
+            '-------------------------------------------------
+            If Len(strMergeRange) > 0 Then
+                objExcel.Application.DisplayAlerts = False
+                objTargetRange.MergeCells = True
+                objExcel.Application.DisplayAlerts = True
+            End If
+
+            '-------------------------------------------------
+            'Set the configured row height.
+            '-------------------------------------------------
+            If Not IsNull( _
+                rsGRR_Report!Row_Height_H1_A) Then
+                If CDbl( _
+                    rsGRR_Report!Row_Height_H1_A) > 0 Then
+
+                    objExcel.ActiveSheet.Rows( _
+                        CStr(lngHeaderRow) & ":" & _
+                        CStr(lngHeaderRow)).RowHeight = _
+                            CDbl( _
+                                rsGRR_Report!Row_Height_H1_A)
+                End If
+            End If
+
+            '-------------------------------------------------
+            'Write an H1_A formula or static value.
+            '
+            'Range_H1_A takes precedence over FieldName_H1_A.
+            '-------------------------------------------------
+            strFormula = Trim$(Nz( _
+                rsGRR_Report!Range_H1_A, _
+                vbNullString))
+
+            If Len(strFormula) > 0 Then
+
+                strFormula = adhReplace( _
+                    strFormula, _
+                    "?", _
+                    lngHeaderRow)
+
+                If Left$(strFormula, 1) <> "=" Then
+                    strFormula = "=" & strFormula
+                End If
+
+                Debug.Print _
+                    "H1_A formula: "; _
+                    strFormula
+
+                objTargetRange.Cells(1, 1).Formula = _
+                    strFormula
+
+            ElseIf Len(Trim$(Nz( _
+                rsGRR_Report!FieldName_H1_A, _
+                vbNullString))) > 0 Then
+
+                objTargetRange.Cells(1, 1).Value = _
+                    rsGRR_Report!FieldName_H1_A
+
+            End If
+
+            '-------------------------------------------------
+            'General H1_A cell formatting.
+            '-------------------------------------------------
+            With objTargetRange
+
+                .WrapText = CBool(Nz( _
+                    rsGRR_Report!Wrap_Text_H1_A, _
+                    False))
+
+                .NumberFormat = Nz( _
+                    rsGRR_Report!Format_H1_A, _
+                    "General")
+
+                .VerticalAlignment = xlCenter
+
+            End With
+
+            '-------------------------------------------------
+            'H1_A fill color.
+            '-------------------------------------------------
+            ApplyHeaderFillColor _
+                objTargetRange, _
+                rsGRR_Report!ColorIndex_H1_A
+
+            '-------------------------------------------------
+            'H1_A font.
+            '-------------------------------------------------
+            With objTargetRange.Font
+
+                .Name = Nz( _
+                    rsGRR_Report!Font_H1_A, _
+                    "Arial")
+
+                .FontStyle = GetHeaderFontStyle( _
+                    rsGRR_Report!Font_Style_H1_A)
+
+                .Size = CDbl(Nz( _
+                    rsGRR_Report!Font_Size_H1_A, _
+                    10))
+
+                If CBool(Nz( _
+                    rsGRR_Report!Underline_H1_A, _
+                    False)) Then
+
+                    .Underline = xlUnderlineStyleSingle
+
+                Else
+
+                    .Underline = xlUnderlineStyleNone
+
+                End If
+
+            End With
+
+            ApplyHeaderFontColor _
+                objTargetRange, _
+                rsGRR_Report!Font_Color_H1_A
+
+            '-------------------------------------------------
+            'H1_A borders.
+            '-------------------------------------------------
+            lLineWeight = GetHeaderLineWeight( _
+                rsGRR_Report!LineWeight_H1_A)
+
+            ApplyHeaderBorders _
+                objTargetRange, _
+                lLineWeight, _
+                CBool(Nz( _
+                    rsGRR_Report!LineTop_H1_A, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineBottom_H1_A, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineLeft_H1_A, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineRight_H1_A, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineVert_H1_A, _
+                    False))
+
+        Else
+
+            Debug.Print _
+                "Invalid HeaderRow_H1_A: "; _
+                lngHeaderRow; _
+                ". H1_A permits rows 1 or 2."
+
+        End If
+
+    End If
+
+    '=========================================================
+    ' H1
+    '
+    ' Hyperlinks, generated dates, source text, and related
+    ' content in rows 3 or 4.
+    '=========================================================
+    If Not IsNull(rsGRR_Report!HeaderRow_H1) Then
+
+        lngHeaderRow = CLng( _
+            rsGRR_Report!HeaderRow_H1)
+
+        If lngHeaderRow >= 3 And lngHeaderRow <= 4 Then
+
+            strMergeRange = Trim$(Nz( _
+                rsGRR_Report!MergeRange_H1, _
+                vbNullString))
+
+            '-------------------------------------------------
+            'Determine the target range.
+            '-------------------------------------------------
+            If Len(strMergeRange) > 0 Then
+
+                strTargetRange = adhReplace( _
+                    strMergeRange, _
+                    "?", _
+                    lngHeaderRow)
+
+            Else
+
+                strTargetRange = _
+                    strLetter & CStr(lngHeaderRow)
+
+            End If
+
+            Debug.Print _
+                "H1 target: "; _
+                strTargetRange
+
+            Set objTargetRange = _
+                objExcel.ActiveSheet.Range(strTargetRange)
+
+            '-------------------------------------------------
+            'Merge before writing the formula.
+            '
+            'If H1 is on row 4, merge and center it.
+            'Rows 1 through 3 retain their normal alignment.
+            '-------------------------------------------------
+            If Len(strMergeRange) > 0 Then
+            
+                objExcel.Application.DisplayAlerts = False
+                objTargetRange.MergeCells = True
+                objExcel.Application.DisplayAlerts = True
+            
+                If lngHeaderRow = 4 Then
+            
+                    With objTargetRange
+                        .HorizontalAlignment = xlCenter
+                        .VerticalAlignment = xlCenter
+                    End With
+            
+                End If
+            
+            End If
+
+            '-------------------------------------------------
+            'Set the configured row height.
+            '-------------------------------------------------
+            If Not IsNull( _
+                rsGRR_Report!Row_Height_H1) Then
+
+                If CDbl( _
+                    rsGRR_Report!Row_Height_H1) > 0 Then
+
+                    objExcel.ActiveSheet.Rows( _
+                        CStr(lngHeaderRow) & ":" & _
+                        CStr(lngHeaderRow)).RowHeight = _
+                            CDbl( _
+                                rsGRR_Report!Row_Height_H1)
+
+                End If
+
+            End If
+
+            '-------------------------------------------------
+            'Write the H1 formula.
+            '-------------------------------------------------
+            strFormula = Trim$(Nz( _
+                rsGRR_Report!Range_H1, _
+                vbNullString))
+            If Len(strFormula) > 0 Then
+                strFormula = adhReplace( _
+                    strFormula, _
+                    "?", _
+                    lngHeaderRow)
+                If Left$(strFormula, 1) <> "=" Then
+                    strFormula = "=" & strFormula
+                End If
+                Debug.Print _
+                    "H1 formula: "; _
+                    strFormula
+
+                objTargetRange.Cells(1, 1).Formula = _
+                    strFormula
+            End If
+
+            '-------------------------------------------------
+            'H1 fill color.
+            '-------------------------------------------------
+            ApplyHeaderFillColor _
+                objTargetRange, _
+                rsGRR_Report!ColorIndex_H1
+
+            '-------------------------------------------------
+            'H1 font.
+            '
+            'There is currently no Font_H1 field, so this
+            'retains the worksheet's existing font name.
+            '-------------------------------------------------
+            With objTargetRange.Font
+
+                .FontStyle = GetHeaderFontStyle( _
+                    rsGRR_Report!Font_Style_H1)
+                .Size = CDbl(Nz( _
+                    rsGRR_Report!Font_Size_H1, _
+                    10))
+            End With
+
+            ApplyHeaderFontColor _
+                objTargetRange, _
+                rsGRR_Report!Font_Color_H1
+
+            '-------------------------------------------------
+            'H1 borders.
+            '-------------------------------------------------
+            lLineWeight = GetHeaderLineWeight( _
+                rsGRR_Report!LineWeight_H1)
+
+            ApplyHeaderBorders _
+                objTargetRange, _
+                lLineWeight, _
+                CBool(Nz( _
+                    rsGRR_Report!LineTop_H1, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineBottom_H1, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineLeft_H1, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineRight_H1, _
+                    False)), _
+                CBool(Nz( _
+                    rsGRR_Report!LineVert_H1, _
+                    False))
+        Else
+            Debug.Print _
+                "Invalid HeaderRow_H1: "; _
+                lngHeaderRow; _
+                ". H1 permits rows 3 or 4."
+
+        End If
+
+    End If
+
+NextHeaderRecord:
+
+    Set objTargetRange = Nothing
+
+    rsGRR_Report.MoveNext
+
+Loop
+If bFreezeBelow Then
+
+    Dim objBookWindow As Excel.Window
+    Dim blnWindowWasVisible As Boolean
+    Dim lngPreviousWindowState As Long
+
+    Set objBookWindow = objExcel.ActiveWorkbook.Windows(1)
+
+    'Remember the rendering configuration.
+    blnWindowWasVisible = objBookWindow.Visible
+    lngPreviousWindowState = objBookWindow.WindowState
+
+    'The workbook window must be available for FreezePanes.
+    '
+    'Application.Visible remains False during background
+    'rendering, so Excel should not be shown to the user.
+    objBookWindow.Visible = True
+    objBookWindow.WindowState = xlNormal
+
+    objExcel.ActiveWorkbook.Worksheets( _
+        strTabName).Activate
+
+    With objBookWindow
+
+        .FreezePanes = False
+        .Split = False
+
+    End With
+
+    'Retain the working approach you already tested.
+    objExcel.ActiveSheet.Rows( _
+        CStr(rsCount) & ":" & CStr(rsCount)).Select
+
+    objBookWindow.FreezePanes = True
+
+    Debug.Print _
+        "Freeze panes applied at row "; _
+        rsCount; _
+        " on sheet "; _
+        strTabName
+
+    'Restore the previous workbook-window state.
+    objBookWindow.WindowState = lngPreviousWindowState
+
+    If blnWindowWasVisible = False Then
+        objBookWindow.Visible = False
+    End If
+
+    Set objBookWindow = Nothing
+
+End If
+        objExcel.Application.DisplayAlerts = True
+    
+  Else
+    
+  End If
+
+
+End Function
+Private Sub ApplyHeaderFontColor( _
+    ByVal objTargetRange As Excel.Range, _
+    ByVal varMetadataColor As Variant)
+
+    Dim strColor As String
+
+    strColor = UCase$(Trim$(Nz( _
+        varMetadataColor, _
+        vbNullString)))
+
+    With objTargetRange.Font
+
+        Select Case strColor
+            Case vbNullString, "BLACK"
+                .ColorIndex = 1
+            Case "RED"
+                .ColorIndex = 3
+            Case "GREEN"
+                .ColorIndex = 50
+            Case "BLUE"
+                .ColorIndex = 5
+            Case "GOLD"
+                .ColorIndex = 44
+            Case "LIGHT GOLD"
+                .ColorIndex = 36
+            Case "XLTHEMECOLORDARK1"
+                .ThemeColor = xlThemeColorDark1
+            Case "XLTHEMECOLORLIGHT1"
+                .ThemeColor = xlThemeColorLight1
+            Case "XLTHEMECOLORDARK2"
+                .ThemeColor = xlThemeColorDark2
+            Case "XLTHEMECOLORLIGHT2"
+                .ThemeColor = xlThemeColorLight2
+            Case "XLTHEMECOLORACCENT1"
+                .ThemeColor = xlThemeColorAccent1
+            Case "XLTHEMECOLORACCENT2"
+                .ThemeColor = xlThemeColorAccent2
+            Case "XLTHEMECOLORACCENT3"
+                .ThemeColor = xlThemeColorAccent3
+            Case "XLTHEMECOLORACCENT4"
+                .ThemeColor = xlThemeColorAccent4
+            Case "XLTHEMECOLORACCENT5"
+                .ThemeColor = xlThemeColorAccent5
+            Case "XLTHEMECOLORACCENT6"
+                .ThemeColor = xlThemeColorAccent6
+            Case Else
+
+                If IsNumeric(strColor) Then
+                    .Color = CLng(strColor)
+                Else
+                    Debug.Print _
+                        "Unrecognized header font color: "; _
+                        strColor
+                    .ColorIndex = 1
+                End If
+        End Select
+    End With
+
+End Sub
+Private Sub ApplyHeaderFillColor( _
+    ByVal objTargetRange As Excel.Range, _
+    ByVal varMetadataColor As Variant)
+
+    Dim strColor As String
+
+    strColor = UCase$(Trim$(Nz( _
+        varMetadataColor, _
+        vbNullString)))
+
+    With objTargetRange.Interior
+
+        Select Case strColor
+
+            '----------------------------------------------
+            'No fill
+            '----------------------------------------------
+            Case vbNullString, _
+                 "NONE", _
+                 "XLCOLORINDEXNONE"
+
+                .Pattern = xlSolid
+                .ColorIndex = xlColorIndexNone
+
+            '----------------------------------------------
+            'Named dropdown values
+            '----------------------------------------------
+            Case "BLACK"
+
+                .Pattern = xlSolid
+                .ColorIndex = 1
+
+            Case "RED"
+
+                .Pattern = xlSolid
+                .ColorIndex = 3
+
+            Case "GREEN"
+
+                .Pattern = xlSolid
+                .ColorIndex = 50
+
+            Case "BLUE"
+
+                .Pattern = xlSolid
+                .ColorIndex = 5
+
+            Case "GOLD"
+
+                .Pattern = xlSolid
+                .ColorIndex = 44
+
+            Case "LIGHT GOLD"
+
+                .Pattern = xlSolid
+                .ColorIndex = 36
+
+            '----------------------------------------------
+            'Theme constants stored as text
+            '----------------------------------------------
+            Case "XLTHEMECOLORDARK1"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorDark1
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORLIGHT1"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorLight1
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORDARK2"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorDark2
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORLIGHT2"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorLight2
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT1"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent1
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT2"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent2
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT3"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent3
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT4"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent4
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT5"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent5
+                .TintAndShade = 0
+
+            Case "XLTHEMECOLORACCENT6"
+
+                .Pattern = xlSolid
+                .ThemeColor = xlThemeColorAccent6
+                .TintAndShade = 0
+
+            '----------------------------------------------
+            'Numeric Excel color value
+            '
+            'Example: 65535 is yellow.
+            '----------------------------------------------
+            Case Else
+
+                If IsNumeric(strColor) Then
+
+                    .Pattern = xlSolid
+                    .Color = CLng(strColor)
+
+                Else
+
+                    Debug.Print _
+                        "Unrecognized header fill color: "; _
+                        strColor
+
+                    .ColorIndex = xlColorIndexNone
+
+                End If
+
+        End Select
+
+        .PatternColorIndex = xlAutomatic
+
+    End With
+
+End Sub
+Private Function GetHeaderFontStyle( _
+    ByVal varFontStyle As Variant) As String
+
+    Select Case UCase$(Trim$(Nz( _
+        varFontStyle, _
+        vbNullString)))
+
+        Case "REGULAR"
+
+            GetHeaderFontStyle = "Regular"
+
+        Case "BOLD"
+
+            GetHeaderFontStyle = "Bold"
+
+        Case "ITALIC"
+
+            GetHeaderFontStyle = "Italic"
+
+        Case "BOLD ITALIC"
+
+            GetHeaderFontStyle = "Bold Italic"
+
+        Case Else
+
+            GetHeaderFontStyle = "Regular"
+
+    End Select
+
+End Function
+Private Function GetHeaderLineWeight( _
+    ByVal varLineWeight As Variant) As Long
+
+    Select Case UCase$(Trim$(Nz( _
+        varLineWeight, _
+        vbNullString)))
+
+        Case "THIN", "XLTHIN", "2"
+
+            GetHeaderLineWeight = xlThin
+
+        Case "MEDIUM", "XLMEDIUM", "-4138"
+
+            GetHeaderLineWeight = xlMedium
+
+        Case "THICK", "XLTHICK", "4"
+
+            GetHeaderLineWeight = xlThick
+
+        Case Else
+
+            GetHeaderLineWeight = xlThin
+
+    End Select
+
+End Function
+Private Sub ApplyHeaderBorders( _
+    ByVal objTargetRange As Excel.Range, _
+    ByVal lngLineWeight As Long, _
+    ByVal blnTop As Boolean, _
+    ByVal blnBottom As Boolean, _
+    ByVal blnLeft As Boolean, _
+    ByVal blnRight As Boolean, _
+    ByVal blnInsideVertical As Boolean)
+
+    If blnTop Then
+
+        With objTargetRange.Borders(xlEdgeTop)
+
+            .LineStyle = xlContinuous
+            .Weight = lngLineWeight
+            .ColorIndex = xlAutomatic
+
+        End With
+
+    End If
+
+    If blnBottom Then
+
+        With objTargetRange.Borders(xlEdgeBottom)
+
+            .LineStyle = xlContinuous
+            .Weight = lngLineWeight
+            .ColorIndex = xlAutomatic
+
+        End With
+
+    End If
+
+    If blnLeft Then
+
+        With objTargetRange.Borders(xlEdgeLeft)
+
+            .LineStyle = xlContinuous
+            .Weight = lngLineWeight
+            .ColorIndex = xlAutomatic
+
+        End With
+
+    End If
+
+    If blnRight Then
+
+        With objTargetRange.Borders(xlEdgeRight)
+
+            .LineStyle = xlContinuous
+            .Weight = lngLineWeight
+            .ColorIndex = xlAutomatic
+
+        End With
+
+    End If
+
+    If blnInsideVertical Then
+
+        If objTargetRange.Columns.Count > 1 Then
+
+            If objTargetRange.MergeCells = False Then
+
+                With objTargetRange.Borders( _
+                    xlInsideVertical)
+
+                    .LineStyle = xlContinuous
+                    .Weight = lngLineWeight
+                    .ColorIndex = xlAutomatic
+
+                End With
+
+            End If
+
+        End If
+
+    End If
+
+End Sub
+
+
 Private Function fn_FindBreaks(ByRef rsStrTable As DAO.Recordset, ByRef strNameHolder As String, ByVal i As Integer) As Boolean
 
 Dim clsCreateRecord As New clsCreateRecord
@@ -1883,8 +2793,12 @@ Dim eEnd As Integer
 Dim counter As Integer
 Dim counter2 As Integer
 
+'Const original = 2  'records start at 2
+'Const beginSheet = 7 'place where i want data to actually start (not headers)
+
+'lets try this:
 Const original = 2  'records start at 2
-Const beginSheet = 7 'place where i want data to actually start (not headers)
+Const beginSheet = 10 'place where i want data to actually start (not headers) Setting to 10 gives 5 rows for a header.  if you set it less, the header wont show up.  See
 
 'Let prpHead_1 = head_1
 'Let prpHead_2 = head_2
@@ -1983,7 +2897,7 @@ If TableOrQueryExists_TSB("", prpSortingGrouping) = False Then
                                     While rsTemp.EOF = False
                                        rsTemp.Edit
                                        rsTemp![End1] = (rsTemp![count1] - 1) + rsTemp![begin1]
-                                       rsTemp![head_B_1] = rsTemp![begin1] - prpHead_1
+                                       rsTemp![Head_b_1] = rsTemp![begin1] - prpHead_1
                                        rsTemp![Head_E_1] = rsTemp![begin1] - 1
                                        rsTemp![Sum_End_1] = rsTemp![End1] + (prpFoot_1)
                                        rsTemp![Sum_Beg_1] = rsTemp![End1] + 1
@@ -2033,7 +2947,7 @@ If TableOrQueryExists_TSB("", prpSortingGrouping) = False Then
      
      While rsEditNums.EOF = False
             rsEditNums.Edit
-                rsEditNums![head_B_1] = rsEditNums![head_B_1] + prpHead_2
+                rsEditNums![Head_b_1] = rsEditNums![Head_b_1] + prpHead_2
                 rsEditNums![Head_E_1] = rsEditNums![Head_E_1] + prpHead_2
                 rsEditNums![begin1] = rsEditNums![begin1] + prpHead_2
                 rsEditNums![End1] = rsEditNums![End1] + prpHead_2
@@ -2110,7 +3024,7 @@ rsTemp.MoveFirst
          rsEditNums.Edit
             rsEditNums![begin1] = rsEditNums![insert_1] + eEnd + 1
             rsEditNums![End1] = rsEditNums![insert_1] + eEnd + rsEditNums![count1]
-            rsEditNums![head_B_1] = (rsEditNums![insert_1] + eEnd + 1) - prpHead_1
+            rsEditNums![Head_b_1] = (rsEditNums![insert_1] + eEnd + 1) - prpHead_1
             rsEditNums![Head_E_1] = ((rsEditNums![insert_1] + eEnd) - prpHead_1) + prpHead_1
             rsEditNums![Sum_End_1] = rsEditNums![insert_1] + eEnd + rsEditNums![count1] + prpFoot_1
             rsEditNums![Sum_Beg_1] = (rsEditNums![insert_1] + eEnd + rsEditNums![count1] + prpFoot_1) - prpFoot_1 + 1
@@ -2148,10 +3062,10 @@ rsTemp.MoveFirst
                             Set rsInnerCountSort = db.OpenRecordset("Select * From " & prpSortingGrouping & " Where " & prpSortingGrouping & ".[Level] = " & """" & slvl & """", dbOpenDynaset)
                                 rsInnerCountSort.Requery
                                 rsInnerCountSort.Edit
-                                    rsInnerCountSort![head_b_1_temp] = rsInnerCountSort![head_B_1] - prpHead_2
+                                    rsInnerCountSort![head_b_1_temp] = rsInnerCountSort![Head_b_1] - prpHead_2
                                 rsInnerCountSort.Update
                                 rsTemp.Edit
-                                    rsTemp![head_B_1] = rsInnerCountSort![head_b_1_temp]
+                                    rsTemp![Head_b_1] = rsInnerCountSort![head_b_1_temp]
                                     rsTemp![Head_E_1] = rsInnerCountSort![head_b_1_temp] + prpHead_2 - 1 'adjust
                                 rsTemp.Update
                                 Else
@@ -2161,7 +3075,7 @@ rsTemp.MoveFirst
                                     rsInnerCountSort![head_b_1_temp] = rsInnerCountSort![head_b_1_temp] - prpHead_2
                                 rsInnerCountSort.Update
                                 rsTemp.Edit
-                                    rsTemp![head_B_1] = rsInnerCountSort![head_b_1_temp]
+                                    rsTemp![Head_b_1] = rsInnerCountSort![head_b_1_temp]
                                     rsTemp![Head_E_1] = rsInnerCountSort![head_b_1_temp] + prpHead_2 - 1 'adjust
                                 rsTemp.Update
                         End If
@@ -2189,10 +3103,10 @@ rsTemp.MoveFirst
                         If rsEditNums.EOF = False Then
                         If rsEditNums![head_b_1_temp] = 0 Then
                             rsEditNums.Edit
-                                rsEditNums![head_b_1_temp] = rsEditNums![head_B_1] - prpHead_2
+                                rsEditNums![head_b_1_temp] = rsEditNums![Head_b_1] - prpHead_2
                             rsEditNums.Update
                             rsTemp.Edit
-                                rsTemp![head_B_1] = rsEditNums![head_b_1_temp]
+                                rsTemp![Head_b_1] = rsEditNums![head_b_1_temp]
                                 rsTemp![Head_E_1] = ((rsEditNums![head_b_1_temp] + prpHead_2) - 1)
                            rsTemp.Update
                         Else
@@ -2200,7 +3114,7 @@ rsTemp.MoveFirst
                                 rsEditNums![head_b_1_temp] = rsEditNums![head_b_1_temp] - prpHead_2
                             rsEditNums.Update
                             rsTemp.Edit
-                                rsTemp![head_B_1] = rsEditNums![head_b_1_temp]
+                                rsTemp![Head_b_1] = rsEditNums![head_b_1_temp]
                                 rsTemp![Head_E_1] = ((rsEditNums![head_b_1_temp] + prpHead_2) - 1)
                             rsTemp.Update
                         End If
@@ -2319,858 +3233,567 @@ Let S = 0
 1     ColLet2Num = CN
 End Function
 
-Function fn_CreateChart(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, strTabName As String)
-'keep in mind that you can use prpSortingGrouping table and tab name and table name and be able to address all of your totals (or sub totals)
-'you already know the column layout of your report, but you you can easily calculate all the rows and make your charts dynamic - see ranges below
-'this should give you the flexibility of being able to really customize the chart for each sheet.  I think a generic chart rendering routine would not work as well, unless its
-'coupled with metadata tables.  in the case below i obviously used the excel macro recorder while buiding what i wanted for this chart
-'perhaps someone or AI can help build a metadata driven chart module for this project, but for now, i'm good with the semi hard coded method you see below.
+Function fn_PivotChart(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, strTabName As String)
 
-Dim rsgroupSort As DAO.Recordset
-Dim db As Database
-Dim dbl As Database
+'example code for pivot
 
-Set db = DBEngine(0)(0)
-
-''---------------------------------------------------------------------------------------------------------------------
-
-'-------------------------------------------------KPI_Monthly------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-If strTabName = "KPI_Monthly" Then
-Dim col As String, strRange_1 As String, strRange_2 As String, strRange_3 As String
-
-Set dbl = DBEngine(0)(0)
-'KPI_Monthly
-Debug.Print "Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals''))"
-
-
- Set rsgroupSort = dbl.OpenRecordset("Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals'))", dbOpenDynaset)
-
-
-
-rsgroupSort.MoveLast
-rsgroupSort.MoveFirst
-
-Debug.Print rsgroupSort.RecordCount
-
-Debug.Print "Stop"
+'Dim db As Database
+'Dim rssortgroup As dao.Recordset
+'Dim hBeginLetter As String, hEndLetter As String
+'Dim bRk2 As String, posAdd_H As Integer, brk3 As String, brk4 As String, brk5 As String
+'Dim rng As String
 '
-        strRange_1 = ""
-        strRange_2 = ""
-        strRange_3 = ""
-        strRange_1 = ("B" & rsgroupSort![begin1] & ":" & "B" & rsgroupSort![End1])
-        strRange_2 = ("M" & rsgroupSort![begin1] & ":" & "M" & rsgroupSort![End1])
-        strRange_3 = ("P" & rsgroupSort![begin1] & ":" & "P" & rsgroupSort![End1])
-        
-        Debug.Print strRange_1
-                Debug.Print strRange_2
-                        Debug.Print strRange_3
-                        
-        
-        objExcel.Application.Sheets.Add
-        objExcel.Application.Sheets("Sheet1").Name = "Monthly_Chart"
-        objExcel.Application.Sheets("Monthly_Chart").Select
-        objExcel.Application.Range("F8").Select
-        
-        objExcel.Application.ActiveSheet.Shapes.AddChart2(201, xlColumnClustered).Select
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.7270833333, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2517359288, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.Application.CutCopyMode = False
-        objExcel.Application.Range("E5").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        
-        objExcel.ActiveChart.SeriesCollection.NewSeries
-        objExcel.ActiveChart.FullSeriesCollection(1).Name = "=KPI_Monthly!" & strRange_1
-        
-        
-        objExcel.ActiveChart.FullSeriesCollection(1).Values = "=KPI_Monthly!" & strRange_2
-        objExcel.ActiveChart.FullSeriesCollection(1).Name = "=""Work Order on Time %"""
-        objExcel.ActiveChart.SeriesCollection.NewSeries
-        objExcel.ActiveChart.FullSeriesCollection(2).Name = "=""# of Samples on Time %"""
-        objExcel.ActiveChart.FullSeriesCollection(2).Values = "=KPI_Monthly!" & strRange_3
-        objExcel.ActiveChart.FullSeriesCollection(1).XValues = "=KPI_Monthly!" & strRange_1
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.3208685163, msoFalse, _
-            msoScaleFromTopLeft
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2149793725, msoFalse, _
-            msoScaleFromTopLeft
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.095890411, msoFalse, _
-            msoScaleFromBottomRight
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.3208685163, msoFalse, _
-        msoScaleFromTopLeft
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2149793725, msoFalse, _
-        msoScaleFromTopLeft
-
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.095890411, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.ActiveChart.SetElement (msoElementChartTitleAboveChart)
-        objExcel.ActiveChart.ChartTitle.Text = _
-        "Monthly Work Order on Time % Compared to Sample On Time % by Month and Year"
-        objExcel.Selection.Format.TextFrame2.TextRange.Characters.Text = _
-        "Work Order on Time % Compared to Sample On Time Percent by Month and Year"
-        
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(1, 73).ParagraphFormat
-            .TextDirection = msoTextDirectionLeftToRight
-            .Alignment = msoAlignCenter
-        End With
-        
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(1, 4).Font
-            .BaselineOffset = 0
-            .Bold = msoFalse
-            .NameComplexScript = "+mn-cs"
-            .NameFarEast = "+mn-ea"
-            .Fill.Visible = msoTrue
-            .Fill.ForeColor.rgb = rgb(89, 89, 89)
-            .Fill.Transparency = 0
-            .Fill.Solid
-            .Size = 14
-            .Italic = msoFalse
-            .Kerning = 12
-            .Name = "+mn-lt"
-            .UnderlineStyle = msoNoUnderline
-            .Spacing = 0
-            .Strike = msoNoStrike
-        End With
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(5, 69).Font
-            .BaselineOffset = 0
-            .Bold = msoFalse
-            .NameComplexScript = "+mn-cs"
-            .NameFarEast = "+mn-ea"
-            .Fill.Visible = msoTrue
-            .Fill.ForeColor.rgb = rgb(89, 89, 89)
-            .Fill.Transparency = 0
-            .Fill.Solid
-            .Size = 14
-            .Italic = msoFalse
-            .Kerning = 12
-            .Name = "+mn-lt"
-            .UnderlineStyle = msoNoUnderline
-            .Spacing = 0
-            .Strike = msoNoStrike
-        End With
-        objExcel.Application.Range("S6").Select
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.ChartTitle.Select
-        objExcel.ActiveChart.ChartArea.Select
-        objExcel.ActiveChart.SetElement (msoElementLegendBottom)
-        objExcel.ActiveChart.Legend.Select
-        objExcel.ActiveChart.Legend.LegendEntries(1).Select
-        objExcel.Application.Range("U33").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.Legend.Select
-        objExcel.Selection.Width = 225.504
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.Axes(xlValue).MaximumScale = 1
-
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.PlotArea.Select
-        objExcel.Application.Range("K5").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementLeft -214.5
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementTop -90.75
-        objExcel.ActiveWindow.SmallScroll Down:=6
-        objExcel.Application.Range("AB10").Select
-        
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.1027751402, msoFalse, _
-        msoScaleFromBottomRight
-        
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementLeft 91.5
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementTop 29.25
-        
-        objExcel.Application.Range("A1").Select
-
- 
-End If
-
-'-------------------------------------------------End KPI_Monthly----------------------------------------------------------------------------------------------------------------------------------
-'-------------------------------------------------Begin KPI_Special------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-If strTabName = "KPI_Special" Then
-
-
-Set dbl = DBEngine(0)(0)
-'KPI_Monthly
-Debug.Print "Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals''))"
-
-
- Set rsgroupSort = dbl.OpenRecordset("Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals'))", dbOpenDynaset)
-
-
-
-rsgroupSort.MoveLast
-rsgroupSort.MoveFirst
-
-Debug.Print rsgroupSort.RecordCount
-
-Debug.Print "Stop"
+'Set db = DBEngine(0)(0)
 '
-        strRange_1 = ""
-        strRange_2 = ""
-        strRange_3 = ""
-        strRange_1 = ("$B$" & rsgroupSort![begin1] & ":" & "$B$" & rsgroupSort![End1])
-        strRange_2 = ("$M$" & rsgroupSort![begin1] & ":" & "$M$" & rsgroupSort![End1])
-        strRange_3 = ("$P$" & rsgroupSort![begin1] & ":" & "$P$" & rsgroupSort![End1])
-        
-        Debug.Print strRange_1
-                Debug.Print strRange_2
-                        Debug.Print strRange_3
-        
-        objExcel.Application.Sheets.Add
-        objExcel.Application.Sheets("Sheet2").Name = "Special_Chart"
-        objExcel.Application.Sheets("Special_Chart").Select
-
-        objExcel.Application.ActiveSheet.Shapes.AddChart2(201, xlColumnClustered).Select
-        
-
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.7270833333, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2517359288, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.Application.CutCopyMode = False
-        objExcel.Application.Range("E5").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        
-
-        objExcel.ActiveChart.SeriesCollection.NewSeries
-        objExcel.ActiveChart.FullSeriesCollection(1).Name = "=KPI_Special!" & strRange_1
-        objExcel.ActiveChart.FullSeriesCollection(1).Values = "=KPI_Special!" & strRange_2
-        objExcel.ActiveChart.FullSeriesCollection(1).Name = "=""Work Order on Time %"""
-        objExcel.ActiveChart.SeriesCollection.NewSeries
-        objExcel.ActiveChart.FullSeriesCollection(2).Name = "=""# of Samples on Time %"""
-        objExcel.ActiveChart.FullSeriesCollection(2).Values = "=KPI_Special!" & strRange_3
-        objExcel.ActiveChart.FullSeriesCollection(1).XValues = "=KPI_Special!" & strRange_1
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.3208685163, msoFalse, _
-            msoScaleFromTopLeft
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2149793725, msoFalse, _
-            msoScaleFromTopLeft
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.095890411, msoFalse, _
-            msoScaleFromBottomRight
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.3208685163, msoFalse, _
-        msoScaleFromTopLeft
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.2149793725, msoFalse, _
-        msoScaleFromTopLeft
-
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").ScaleHeight 1.095890411, msoFalse, _
-        msoScaleFromBottomRight
-        objExcel.ActiveChart.SetElement (msoElementChartTitleAboveChart)
-        objExcel.ActiveChart.ChartTitle.Text = _
-        "Special Work Order on Time % Compared to Sample On Time % by Month and Year"
-        objExcel.Selection.Format.TextFrame2.TextRange.Characters.Text = _
-        "Special Work Order on Time % Compared to Sample On Time Percent by Month and Year"
-        
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(1, 73).ParagraphFormat
-            .TextDirection = msoTextDirectionLeftToRight
-            .Alignment = msoAlignCenter
-        End With
-        
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(1, 4).Font
-            .BaselineOffset = 0
-            .Bold = msoFalse
-            .NameComplexScript = "+mn-cs"
-            .NameFarEast = "+mn-ea"
-            .Fill.Visible = msoTrue
-            .Fill.ForeColor.rgb = rgb(89, 89, 89)
-            .Fill.Transparency = 0
-            .Fill.Solid
-            .Size = 14
-            .Italic = msoFalse
-            .Kerning = 12
-            .Name = "+mn-lt"
-            .UnderlineStyle = msoNoUnderline
-            .Spacing = 0
-            .Strike = msoNoStrike
-        End With
-        With objExcel.Selection.Format.TextFrame2.TextRange.Characters(5, 69).Font
-            .BaselineOffset = 0
-            .Bold = msoFalse
-            .NameComplexScript = "+mn-cs"
-            .NameFarEast = "+mn-ea"
-            .Fill.Visible = msoTrue
-            .Fill.ForeColor.rgb = rgb(89, 89, 89)
-            .Fill.Transparency = 0
-            .Fill.Solid
-            .Size = 14
-            .Italic = msoFalse
-            .Kerning = 12
-            .Name = "+mn-lt"
-            .UnderlineStyle = msoNoUnderline
-            .Spacing = 0
-            .Strike = msoNoStrike
-        End With
-        objExcel.Application.Range("S6").Select
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.ChartTitle.Select
-        objExcel.ActiveChart.ChartArea.Select
-        objExcel.ActiveChart.SetElement (msoElementLegendBottom)
-        objExcel.ActiveChart.Legend.Select
-        objExcel.ActiveChart.Legend.LegendEntries(1).Select
-        objExcel.Application.Range("U33").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.Legend.Select
-        objExcel.Selection.Width = 225.504
-        
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.Axes(xlValue).MaximumScale = 1
-
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveChart.PlotArea.Select
-        objExcel.Application.Range("K5").Select
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.ChartObjects("Chart 1").Activate
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementLeft -214.5
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementTop -90.75
-        objExcel.ActiveWindow.SmallScroll Down:=6
-        objExcel.Application.Range("AB10").Select
-        
-        objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 1.1027751402, msoFalse, _
-        msoScaleFromBottomRight
-        
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementLeft 91.5
-        objExcel.ActiveSheet.Shapes("Chart 1").IncrementTop 29.25
-        
-        
-        
-        objExcel.Application.Range("A1").Select
-
-
-End If
-
+'rsStrTable.MoveFirst
+'Set rssortgroup = db.OpenRecordset("Select * From " & prpSortingGrouping & " Where " & prpSortingGrouping & ".[Level] = " & """" & rsStrTable![queryname] & """", dbOpenDynaset)
+'
+' 'get the range and all that jaz
+'  rsGRReport.MoveFirst
+' If rsGRReport![Tab] = "Metrics By Region Report" Then 'lets make these one off for now
+'                 While rsGRReport.EOF = False
+'                      If rsGRReport![Column_hide] = False Then
+'                        hBeginLetter = rsGRReport![Letter]
+'                        rsGRReport.MoveLast
+'                       End If
+'                    rsGRReport.MoveNext
+'                Wend
+'
+'    bRk2 = hBeginLetter & (rssortgroup![begin1]) - 1
+'
+'        rssortgroup.MoveLast
+'        rsgRR_Report_Desc.MoveFirst
+'
+'      While rsgRR_Report_Desc.EOF = False
+'        If rsgRR_Report_Desc![Column_hide] = False Then
+'            hEndLetter = rsgRR_Report_Desc![Letter]
+'            rsgRR_Report_Desc.MoveLast
+'        End If
+'        rsgRR_Report_Desc.MoveNext
+'    Wend
+'    rssortgroup.MoveLast
+'    brk3 = hEndLetter & (rssortgroup![End1])
+'
+'    bRk2 = bRk2 & ":" & brk3
+'    bRk2 = objExcel.ActiveSheet.Range(bRk2).Address(ReferenceStyle:=xlR1C1)
+'    brk4 = hBeginLetter & rssortgroup![Sum_End_1] + 2 & ":" & hBeginLetter & rssortgroup![Sum_End_1] + 2
+'    brk5 = hBeginLetter & rssortgroup![Sum_End_1] + 2 & ":" & hBeginLetter & rssortgroup![Sum_End_1] + 2
+'    brk4 = objExcel.ActiveSheet.Range(brk4).Address(ReferenceStyle:=xlR1C1)
+'
+''chart object
+'
+'        objExcel.Application.ActiveWorkbook.PivotCaches.Add(SourceType:=xlDatabase, SourceData:= _
+'        strTabName & "!" & bRk2).CreatePivotTable TableDestination:= _
+'        "'[" & prpJustFileName & "]" & strTabName & "'!" & brk4, TableName:= _
+'        strTabName & "_PivotTable", DefaultVersion:=xlPivotTableVersion10
+'    With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable")
+'        .ColumnGrand = False
+'        .HasAutoFormat = False
+'        .RowGrand = False
+'    End With
+'
+'
+'    objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").AddFields RowFields:="Metric", _
+'        ColumnFields:=Array("Region", "Month / Year")
+'    With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Review Score")
+'        .Orientation = xlDataField
+'        .Caption = "Sum of Review Score"
+'        .Function = xlSum
+'        .NumberFormat = "0%"
+'    End With
+'    objExcel.Application.ActiveWorkbook.Charts.Add
+'    objExcel.Application.ActiveWorkbook.ActiveChart.Location WHERE:=xlLocationAsNewSheet
+'    objExcel.Application.ActiveWorkbook.ActiveChart.Name = "Metrics_Chart1"
+'
+'    'reslect tab
+'   objExcel.Sheets(strTabName).Select
+'   objExcel.ActiveSheet.Range(brk5).Select
+'
+'   With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Region")
+'        .PivotItems("Georgia").Visible = False
+'        .PivotItems("Hawaii").Visible = False
+'        .PivotItems("National").Visible = False
+'        .PivotItems("Northwest").Visible = False
+'        .PivotItems("Ohio").Visible = False
+'        .PivotItems("Colorado").Visible = False
+'        .PivotItems("National").Visible = True
+'        .PivotItems("Region").Visible = False
+'        .PivotItems("(blank)").Visible = False
+'    End With
+'
+'   With objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields("Metric")
+'        .PivotItems("Review Period:").Visible = False
+'        .PivotItems("(blank)").Visible = False
+'    End With
+'
+'    objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").PivotFields( _
+'        "Region").Subtotals = Array(False, False, False, False, False, False, False, False, _
+'        False, False, False, False)
+'
+'           objExcel.ActiveSheet.Range(brk5).Select
+'
+'     rng = objExcel.ActiveSheet.PivotTables(strTabName & "_PivotTable").TableRange1.Address '(ReferenceStyle:=xlR1C1)
+'    objExcel.Sheets("Metrics_Chart1").Select
+'
+'   objExcel.Application.ActiveWorkbook.ActiveChart.SetSourceData Source:=objExcel.Sheets("Metrics_By_Region_Report").Range( _
+'        rng)
+'
+'    With objExcel.Application.ActiveWorkbook.ActiveChart
+'        .HasTitle = False
+'        .Axes(xlCategory, xlPrimary).HasTitle = False
+'        .Axes(xlValue, xlPrimary).HasTitle = False
+'    End With
+'
+'    With objExcel.Application.ActiveWorkbook.ActiveChart
+'        .HasTitle = False
+'        .Axes(xlCategory, xlPrimary).HasTitle = False
+'        .Axes(xlValue, xlPrimary).HasTitle = False
+'    End With
+'        objExcel.Sheets(strTabName).Select
+'
+'    End If
 End Function
 
-Function fn_GrandTotalsOnChart(ByRef rsGRReport As DAO.Recordset, ByRef rsgRR_Report_Desc As DAO.Recordset, ByRef rsStrTable As DAO.Recordset, i As Long, strTabName As String)
-Dim rsgroupSort As DAO.Recordset
-Dim col As String, strRange_1 As String, strRange_2 As String, strRange_3 As String
-Dim strRange_4 As String, strRange_5 As String, strRange_6 As String, strRange_7 As String
-Dim db As Database
-Dim dbl As Database
-Dim count1 As Integer, n As Integer
+Private Sub CreateMedicareTop10Chart(ByRef rsStrTable As DAO.Recordset, ByVal strTabName As String)
 
+    Const TOP_COUNT As Long = 10
 
-Set db = DBEngine(0)(0)
+    'Current Medicare demo grand-total columns.
+    Const CATEGORY_COLUMN As String = "I"
+    Const PAYMENT_COLUMN As String = "N"
 
-''---------------------------------------------------------------------------------------------------------------------
+    Const CHART_SHEET_NAME As String = "Medicare_Chart"
+    Const CHART_OBJECT_NAME As String = "chtMedicareTop10"
 
-'-------------------------------------------------KPI_Monthly GTotals on Chart-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Dim db As DAO.Database
+    Dim rsGroupSort As DAO.Recordset
 
-If strTabName = "KPI_Monthly" Then
+    Dim objSourceSheet As Excel.Worksheet
+    Dim objChartSheet As Excel.Worksheet
+    Dim objChartObject As Excel.ChartObject
+    Dim objChart As Excel.Chart
+    Dim objSeries As Excel.Series
 
-Set dbl = DBEngine(0)(0)
-'KPI_Monthly
-Debug.Print "Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals''))"
+    Dim strSQL As String
+    Dim strCategory As String
 
+    Dim lngBeginRow As Long
+    Dim lngEndRow As Long
+    Dim lngCurrentRow As Long
+    Dim lngPosition As Long
+    Dim lngShift As Long
+    Dim lngOutputRow As Long
+    Dim lngActualCount As Long
 
- Set rsgroupSort = dbl.OpenRecordset("Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals'))", dbOpenDynaset)
+    Dim dblPayment As Double
 
-rsgroupSort.Requery
+    Dim arrCategory(1 To TOP_COUNT) As String
+    Dim arrPayment(1 To TOP_COUNT) As Double
 
+    On Error GoTo ErrorHandler
 
-rsgroupSort.MoveLast
-rsgroupSort.MoveFirst
+    '---------------------------------------------------------
+    'This chart applies only to the Medicare demonstration.
+    'It is safe for OpenXL to call this for every worksheet.
+    '---------------------------------------------------------
+    If strTabName <> "Medicare_Report" Then
+        Exit Sub
+    End If
 
-Debug.Print rsgroupSort.RecordCount
-count1 = (rsgroupSort![End1] - rsgroupSort![begin1])
+    Set db = DBEngine(0)(0)
 
-i = 0
-n = 38
-          objExcel.Application.Sheets("Monthly_Chart").Select
+    '---------------------------------------------------------
+    'Find the Grand Totals band that fn_FindBreaks previously
+    'calculated and stored in the sorting/grouping table.
+    '---------------------------------------------------------
+    strSQL = _
+        "SELECT * " & _
+        "FROM [" & prpSortingGrouping & "] " & _
+        "WHERE [" & prpSortingGrouping & "].[Level] = """ & _
+            Replace(rsStrTable!queryname, """", """""") & """ " & _
+        "AND [Description1] LIKE '*Grand Totals*';"
 
-For n = 38 To count1 + n Step 1
-        '=KPI_Monthly!A661
+    Debug.Print strSQL
 
-        strRange_1 = "=KPI_Monthly!B" & rsgroupSort![begin1] + i
-        'Debug.Print strRange_1
+    Set rsGroupSort = db.OpenRecordset( _
+        strSQL, _
+        dbOpenSnapshot)
 
-        objExcel.Application.Range("I" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_1
+    If rsGroupSort.BOF And rsGroupSort.EOF Then
 
-        i = i + 1
-Next n
+        Err.Raise _
+            vbObjectError + 3100, _
+            "CreateMedicareTop10Chart", _
+            "The Medicare Grand Totals band was not found."
 
-'get the sum line
-count1 = (rsgroupSort![End1] - rsgroupSort![begin1]) + 1
+    End If
 
-i = 0
-n = 38
-          objExcel.Application.Sheets("Monthly_Chart").Select
+    rsGroupSort.MoveFirst
 
-For n = 38 To count1 + n Step 1
-        '=KPI_Monthly!A661
+    lngBeginRow = CLng(rsGroupSort!begin1)
+    lngEndRow = CLng(rsGroupSort!End1)
 
-        strRange_2 = "=KPI_Monthly!L" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("J" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_2
-        
-        strRange_3 = "=KPI_Monthly!K" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("K" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_3
-        
-        strRange_4 = "=KPI_Monthly!M" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("L" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_4
-        
-        strRange_5 = "=KPI_Monthly!N" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("M" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_5
-        
-        strRange_6 = "=KPI_Monthly!O" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("N" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_6
-        
-        strRange_7 = "=KPI_Monthly!P" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("O" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_7
+    Debug.Print _
+        "Medicare Grand Totals band: rows "; _
+        lngBeginRow; _
+        " through "; _
+        lngEndRow
 
-        i = i + 1
-Next n
+    Set objSourceSheet = _
+        objExcel.ActiveWorkbook.Worksheets(strTabName)
 
-           'L and O
-           
-            objExcel.Application.Range("L38:L" & n).Select
-            objExcel.Application.Selection.NumberFormat = "0.0%"
-            
-            objExcel.Application.Range("O38:O" & n).Select
-            objExcel.Application.Selection.NumberFormat = "0.0%"
-            
-            objExcel.Application.Range("I37:I" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
+    '---------------------------------------------------------
+    'Calculate the finished Grand Totals band before reading
+    'its formula results. OpenXL may currently be operating
+    'with Excel calculation set to manual.
+    '---------------------------------------------------------
+    objSourceSheet.Range( _
+        CATEGORY_COLUMN & lngBeginRow & ":" & _
+        PAYMENT_COLUMN & lngEndRow).Calculate
+
+    '=========================================================
+    'READ THE GRAND-TOTAL BAND AND RETAIN THE TOP TEN
+    '
+    'The report itself remains in its original sequence.
+    'No worksheet sorting and no temporary Access table are
+    'required.
+    '=========================================================
+    For lngCurrentRow = lngBeginRow To lngEndRow
+
+        strCategory = Trim$(CStr(Nz( _
+            objSourceSheet.Range( _
+                CATEGORY_COLUMN & lngCurrentRow).Value, _
+            vbNullString)))
+
+        If Len(strCategory) > 0 Then
+
+            If IsNumeric(objSourceSheet.Range( _
+                PAYMENT_COLUMN & lngCurrentRow).Value) Then
+
+                dblPayment = CDbl( _
+                    objSourceSheet.Range( _
+                        PAYMENT_COLUMN & lngCurrentRow).Value)
+
+                '---------------------------------------------
+                'Insert the value into its descending Top 10
+                'position.
+                '---------------------------------------------
+                For lngPosition = 1 To TOP_COUNT
+
+                    If dblPayment > arrPayment(lngPosition) Then
+
+                        'Shift lower-ranking entries down.
+                        For lngShift = TOP_COUNT To _
+                            lngPosition + 1 Step -1
+
+                            arrCategory(lngShift) = _
+                                arrCategory(lngShift - 1)
+
+                            arrPayment(lngShift) = _
+                                arrPayment(lngShift - 1)
+
+                        Next lngShift
+
+                        arrCategory(lngPosition) = _
+                            strCategory
+
+                        arrPayment(lngPosition) = _
+                            dblPayment
+
+                        Exit For
+
+                    End If
+                Next lngPosition
+            End If
+        End If
+
+    Next lngCurrentRow
+
+    '---------------------------------------------------------
+    'Count the populated results.
+    '---------------------------------------------------------
+    For lngPosition = 1 To TOP_COUNT
+
+        If Len(arrCategory(lngPosition)) > 0 Then
+            lngActualCount = lngActualCount + 1
+        End If
+
+    Next lngPosition
+
+    If lngActualCount = 0 Then
+
+        Err.Raise _
+            vbObjectError + 3101, _
+            "CreateMedicareTop10Chart", _
+            "No numeric Medicare payment values were found."
+
+    End If
+
+    '=========================================================
+    'RECREATE THE MEDICARE CHART WORKSHEET
+    '=========================================================
+    objExcel.Application.DisplayAlerts = False
+
+    On Error Resume Next
+
+    objExcel.ActiveWorkbook.Worksheets( _
+        CHART_SHEET_NAME).Delete
+
+    On Error GoTo ErrorHandler
+
+    objExcel.Application.DisplayAlerts = True
+
+    Set objChartSheet = _
+        objExcel.ActiveWorkbook.Worksheets.Add( _
+            After:=objExcel.ActiveWorkbook.Worksheets( _
+                objExcel.ActiveWorkbook.Worksheets.Count))
+
+    objChartSheet.Name = CHART_SHEET_NAME
+
+    '=========================================================
+    'WRITE THE COMPACT CHART-SOURCE TABLE
+    '=========================================================
+    With objChartSheet
+
+        .Range("A1").Value = _
+            "2024 Texas Medicare"
+
+        .Range("A2").Value = _
+            "Top 10 Categories by Estimated Medicare Payment"
+
+        .Range("A4").Value = _
+            "RBCS Category"
+
+        .Range("B4").Value = _
+            "Estimated Medicare Payment ($ Millions)"
+
+        '-----------------------------------------------------
+        'Main chart-sheet title.
+        '-----------------------------------------------------
+        With .Range("A1:B1")
+
+            .Merge
+
+            .Interior.Color = _
+                rgb(31, 78, 121)
+
+            With .Font
+                .Color = rgb(255, 255, 255)
+                .Bold = True
+                .Size = 18
             End With
-                    
-            objExcel.Application.Range("J37:J" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
+
+            .HorizontalAlignment = xlLeft
+            .VerticalAlignment = xlCenter
+
+        End With
+
+        '-----------------------------------------------------
+        'Subtitle.
+        '-----------------------------------------------------
+        With .Range("A2:B2")
+
+            .Merge
+
+            With .Font
+                .Italic = True
+                .Size = 11
             End With
-                    
-            objExcel.Application.Range("K37:K" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
+
+        End With
+
+        '-----------------------------------------------------
+        'Source-table headings.
+        '-----------------------------------------------------
+        With .Range("A4:B4")
+
+            .Interior.Color = _
+                rgb(47, 117, 181)
+
+            With .Font
+                .Color = rgb(255, 255, 255)
+                .Bold = True
             End With
-            
-            objExcel.Application.Range("L37:L" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("M37:M" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("N37:N" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("O37:O" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("I37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""Month and Year"""
-            
-            objExcel.Application.Range("J37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# WO"""
-            
-            objExcel.Application.Range("K37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# late WO"""
-            
-            objExcel.Application.Range("L37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""% WO on Time"""
-            
-            objExcel.Application.Range("M37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# samples"""
-            
-            objExcel.Application.Range("N37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# late samples"""
-            
-            objExcel.Application.Range("O37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""% sample on time"""
-            
-             '--------misc formating
-                            'inside lines
-                objExcel.Application.Range("I38:O" & n - 2).Select
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-            
-            'botom totals
-            objExcel.Application.Range("I" & n - 1 & ":" & "O" & n - 1).Select
-                objExcel.Application.Selection.Font.Bold = True
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-                
-            'top column names
-            objExcel.Application.Range("I37:O37").Select
-                objExcel.Application.Selection.Font.Bold = True
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-                
-                
-                'make the graph fancy
-                objExcel.Application.Columns("I:O").Select
-                objExcel.Application.Selection.ColumnWidth = 17.71
 
-                objExcel.Application.ActiveSheet.ChartObjects("Chart 1").Activate
+            .HorizontalAlignment = xlCenter
+            .VerticalAlignment = xlCenter
 
-                objExcel.Application.ActiveSheet.Shapes("Chart 1").IncrementLeft -81.75
-            
-                objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 0.8965854577, msoFalse, _
-                    msoScaleFromTopLeft
-                objExcel.Application.ActiveWindow.ScrollColumn = 8
-                objExcel.Application.ActiveWindow.ScrollColumn = 7
-                objExcel.Application.ActiveWindow.ScrollColumn = 6
-                objExcel.Application.ActiveWindow.ScrollColumn = 5
-                objExcel.Application.ActiveWindow.ScrollColumn = 4
-                objExcel.Application.ActiveWindow.ScrollColumn = 3
-                objExcel.Application.ActiveWindow.ScrollColumn = 2
-                objExcel.Application.ActiveWindow.ScrollColumn = 1
-                
-                objExcel.Application.Range("A1").Select
-                
-End If
+        End With
 
+        '-----------------------------------------------------
+        'Write the ten highest payment categories.
+        '
+        'Values are stored in millions so the chart labels and
+        'axis remain concise.
+        '-----------------------------------------------------
+        For lngPosition = 1 To lngActualCount
 
+            lngOutputRow = lngPosition + 4
 
-'-------------------------------------------------KPI_Special GTotals on Chart-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+            .Cells(lngOutputRow, 1).Value = _
+                arrCategory(lngPosition)
 
-If strTabName = "KPI_Special" Then
+            .Cells(lngOutputRow, 2).Value = _
+                arrPayment(lngPosition) / 1000000#
 
-Set dbl = DBEngine(0)(0)
-'KPI_Special
-Debug.Print "Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals''))"
+            .Cells(lngOutputRow, 2).NumberFormat = _
+                "$#,##0.0"
 
+            If lngPosition Mod 2 = 0 Then
 
- Set rsgroupSort = dbl.OpenRecordset("Select * From " & prpSortingGrouping & _
- " Where (((" & prpSortingGrouping & ".[Level]) = " & """" & rsStrTable![queryname] & """" & ")" & _
- " AND ((Description1) LIKE '*Grand Totals'))", dbOpenDynaset)
+                .Range( _
+                    "A" & lngOutputRow & _
+                    ":B" & lngOutputRow).Interior.Color = _
+                        rgb(217, 234, 247)
 
-rsgroupSort.Requery
+            End If
 
+        Next lngPosition
 
-rsgroupSort.MoveLast
-rsgroupSort.MoveFirst
+        .Columns("A").ColumnWidth = 56
+        .Columns("B").ColumnWidth = 37.86
 
-Debug.Print rsgroupSort.RecordCount
-count1 = (rsgroupSort![End1] - rsgroupSort![begin1])
+        .Rows("1:1").RowHeight = 30
+        .Rows("4:4").RowHeight = 30
 
-i = 0
-n = 38
-          objExcel.Application.Sheets("Special_Chart").Select
+    End With
 
-For n = 38 To count1 + n Step 1
-        '=KPI_Special!A661
+    '=========================================================
+    'CREATE THE EMBEDDED HORIZONTAL BAR CHART
+    '=========================================================
+    Set objChartObject = _
+        objChartSheet.ChartObjects.Add( _
+            Left:=objChartSheet.Range("D2").Left, _
+            Top:=objChartSheet.Range("D2").Top, _
+            Width:=820, _
+            Height:=480)
 
-        strRange_1 = "=KPI_Special!B" & rsgroupSort![begin1] + i
-        'Debug.Print strRange_1
+    objChartObject.Name = CHART_OBJECT_NAME
 
-        objExcel.Application.Range("I" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_1
+    Set objChart = objChartObject.Chart
 
-        i = i + 1
-Next n
+    With objChart
 
-'get the sum line
-count1 = (rsgroupSort![End1] - rsgroupSort![begin1]) + 1
+        'Horizontal clustered bar chart.
+        .ChartType = xlBarClustered
 
-i = 0
-n = 38
-          objExcel.Application.Sheets("Special_Chart").Select
+        .HasTitle = True
 
-For n = 38 To count1 + n Step 1
-        '=KPI_Monthly!A661
+        .ChartTitle.Text = _
+            "Top 10 Categories by Estimated Medicare Payment"
 
-        strRange_2 = "=KPI_Special!L" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("J" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_2
-        
-        strRange_3 = "=KPI_Special!K" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("K" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_3
-        
-        strRange_4 = "=KPI_Special!M" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("L" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_4
-        
-        strRange_5 = "=KPI_Special!N" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("M" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_5
-        
-        strRange_6 = "=KPI_Special!O" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("N" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_6
-        
-        strRange_7 = "=KPI_Special!P" & rsgroupSort![begin1] + i
-        objExcel.Application.Range("O" & n).Select
-        objExcel.Application.ActiveCell.Formula = strRange_7
+        .HasLegend = False
 
-        i = i + 1
-Next n
+        'Remove any automatically created series.
+        Do While .SeriesCollection.Count > 0
+            .SeriesCollection(1).Delete
+        Loop
 
-           'L and O
-           
-            objExcel.Application.Range("L38:L" & n).Select
-            objExcel.Application.Selection.NumberFormat = "0.0%"
-            
-            objExcel.Application.Range("O38:O" & n).Select
-            objExcel.Application.Selection.NumberFormat = "0.0%"
-            
-            objExcel.Application.Range("I37:I" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-                    
-            objExcel.Application.Range("J37:J" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-                    
-            objExcel.Application.Range("K37:K" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("L37:L" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("M37:M" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("N37:N" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("O37:O" & n).Select
-            With objExcel.Application.Selection
-                .HorizontalAlignment = xlCenter
-            End With
-            
-            objExcel.Application.Range("I37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""Month and Year"""
-            
-            objExcel.Application.Range("J37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# WO"""
-            
-            objExcel.Application.Range("K37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# late WO"""
-            
-            objExcel.Application.Range("L37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""% WO on Time"""
-            
-            objExcel.Application.Range("M37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# samples"""
-            
-            objExcel.Application.Range("N37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""# late samples"""
-            
-            objExcel.Application.Range("O37").Select
-            objExcel.Application.ActiveCell.FormulaR1C1 = "=""% sample on time"""
-            
-             '--------misc formating
-                            'inside lines
-                objExcel.Application.Range("I38:O" & n - 2).Select
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-            
-            'botom totals
-            objExcel.Application.Range("I" & n - 1 & ":" & "O" & n - 1).Select
-                objExcel.Application.Selection.Font.Bold = True
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-                
-            'top column names
-            objExcel.Application.Range("I37:O37").Select
-                objExcel.Application.Selection.Font.Bold = True
-                
-                With objExcel.Application.Selection.Borders(xlEdgeLeft)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeTop)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeBottom)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlEdgeRight)
-                    .Weight = xlMedium
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideVertical)
-                    .Weight = xlThin
-                End With
-                
-                With objExcel.Application.Selection.Borders(xlInsideHorizontal)
-                    .Weight = xlThin
-                End With
-                
-                
-                'make the graph fancy
-                objExcel.Application.Columns("I:O").Select
-                objExcel.Application.Selection.ColumnWidth = 17.71
+        Set objSeries = _
+            .SeriesCollection.NewSeries
 
-                objExcel.Application.ActiveSheet.ChartObjects("Chart 1").Activate
+        With objSeries
 
-                objExcel.Application.ActiveSheet.Shapes("Chart 1").IncrementLeft -81.75
-            
-                objExcel.Application.ActiveSheet.Shapes("Chart 1").ScaleWidth 0.8965854577, msoFalse, _
-                    msoScaleFromTopLeft
-                objExcel.Application.ActiveWindow.ScrollColumn = 8
-                objExcel.Application.ActiveWindow.ScrollColumn = 7
-                objExcel.Application.ActiveWindow.ScrollColumn = 6
-                objExcel.Application.ActiveWindow.ScrollColumn = 5
-                objExcel.Application.ActiveWindow.ScrollColumn = 4
-                objExcel.Application.ActiveWindow.ScrollColumn = 3
-                objExcel.Application.ActiveWindow.ScrollColumn = 2
-                objExcel.Application.ActiveWindow.ScrollColumn = 1
-                
-                objExcel.Application.Range("A1").Select
-                
-End If
+            .Name = _
+                "=""Estimated Medicare Payment"""
 
-End Function
+            .XValues = objChartSheet.Range( _
+                "A5:A" & 4 + lngActualCount)
+
+            .Values = objChartSheet.Range( _
+                "B5:B" & 4 + lngActualCount)
+
+            .Format.Fill.ForeColor.rgb = _
+                rgb(91, 155, 213)
+
+            .Format.Line.ForeColor.rgb = _
+                rgb(31, 78, 121)
+
+            .ApplyDataLabels
+
+            .DataLabels.NumberFormat = _
+                "$0.0"
+
+            .DataLabels.Position = _
+                xlLabelPositionOutsideEnd
+
+        End With
+
+        'The array is descending. Reverse the category axis so
+        'the largest category displays at the top.
+        .Axes(xlCategory).ReversePlotOrder = True
+
+        With .Axes(xlCategory)
+
+            .HasTitle = True
+
+            .AxisTitle.Text = _
+                "RBCS Category"
+
+            .TickLabels.Font.Size = 9
+
+        End With
+
+        With .Axes(xlValue)
+
+            .HasTitle = True
+
+            .AxisTitle.Text = _
+                "Estimated Medicare Payment ($ Millions)"
+
+            .TickLabels.NumberFormat = "$0"
+
+            .HasMajorGridlines = True
+
+        End With
+
+        .ChartArea.Format.Fill.ForeColor.rgb = _
+            rgb(255, 255, 255)
+
+        .PlotArea.Format.Fill.ForeColor.rgb = _
+            rgb(255, 255, 255)
+
+    End With
+
+    '---------------------------------------------------------
+    'Leave the new chart sheet in a clean opening position.
+    '---------------------------------------------------------
+    objChartSheet.Activate
+    objChartSheet.Range("A1").Select
+
+ExitProcedure:
+
+    On Error Resume Next
+
+    objExcel.Application.DisplayAlerts = True
+
+    If Not rsGroupSort Is Nothing Then
+        rsGroupSort.Close
+    End If
+
+    Set objSeries = Nothing
+    Set objChart = Nothing
+    Set objChartObject = Nothing
+    Set objChartSheet = Nothing
+    Set objSourceSheet = Nothing
+    Set rsGroupSort = Nothing
+    Set db = Nothing
+
+    Exit Sub
+
+ErrorHandler:
+
+    Dim lngErrorNumber As Long
+    Dim strErrorDescription As String
+
+    lngErrorNumber = Err.Number
+    strErrorDescription = Err.Description
+
+    objExcel.Application.DisplayAlerts = True
+
+    Err.Raise _
+        lngErrorNumber, _
+        "CreateMedicareTop10Chart", _
+        strErrorDescription
+
+End Sub

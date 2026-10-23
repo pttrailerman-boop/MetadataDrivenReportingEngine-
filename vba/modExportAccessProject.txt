@@ -47,7 +47,7 @@ Public Sub ExportAccessProject( _
 
     RemoveTrailingSlash BaseFolder
 
-    ExportRoot = "C:\SD_KPI\ExportedKPI" & "\" & _
+    ExportRoot = BaseFolder & "\" & _
                  DatabaseName & "_Export_" & TimeStamp
 
     CreateExportFolders ExportRoot

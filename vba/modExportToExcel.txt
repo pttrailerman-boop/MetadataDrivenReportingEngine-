@@ -50,9 +50,9 @@ Dim sPath As String
 Dim sqlStr As String
 
 Dim lnStr As Integer
-
 Dim sKPI As String
 
+Dim FullFilePath As String
 
 Dim oExcel As Object
 Dim oBook As Object
@@ -70,7 +70,7 @@ Dim clsCreateRecord As New clsCreateRecord
 Dim clsExport As New clsExport
 
 Set oExcel = CreateObject("Excel.Application")
-sKPI = CurrentProject.Path & "\" & "BPReportKPI.accdb"
+sKPI = CurrentProject.Path & "\" & "ReportMedicareDemo.accdb"
 
 
 On Error GoTo meErr:
@@ -98,7 +98,6 @@ Set fs = CreateObject("Scripting.FileSystemObject")
   myOpenFile.strDefaultExtension = ".XLS"
   myOpenFile.strDialogTitle = "Save This File(s) as "
   myOpenFile.strFilter = CreateFilterString_TSB("Excel Files (*.XLSX)", "*.XLSX", "All Files (*.*)", "*.*")
-
   strFileOne = GetSaveFileEX_TSB(myOpenFile)
   strFileOne = myOpenFile.strFullPathReturned
   strFileOne = Left(strFileOne, myOpenFile.intFileOffset)
@@ -174,8 +173,8 @@ lnStr = lnStr - 1
 sfilename = CStr(myOpenFile.strFileNameReturned)
 sPath = myOpenFile.strFullPathReturned
 bExists = FileExists_TSB(sPath)
-'-------------------------------Quick Export of data to Excel ISAM driver!---------------------------------------------------
-'-------------------------------Excel file exists User chooses to overwrite or not to overwrite------------------------------
+'-------------------------------Quick Export of data to Excel ISAM driver!------------This has changed to ADO---ISAM was better-------------
+'-------------------------------Excel file exists User chooses to overwrite or not to overwrite---------------------------------------------
     If bExists = True Then
                     fok = MsgBox("This file already exists, " & _
                     "would you like to overwrite it?", vbYesNo, "Overwrite?")
@@ -191,7 +190,7 @@ bExists = FileExists_TSB(sPath)
                             
                             While rsTab.EOF = False
                             
-                              If FileExists_TSB(sPath) = False Then
+                          If FileExists_TSB(sPath) = False Then
                              Set oBook = oExcel.Workbooks.Add
                               oExcel.Application.Windows(1).Visible = True
                               oExcel.Application.Windows(1).WindowState = xlMaximized
@@ -199,7 +198,7 @@ bExists = FileExists_TSB(sPath)
                                          With oBook
                                             .SaveAs FileName:=sPath
                                          End With
-                                End If
+                            End If
     
                            Set oBook = oExcel.Workbooks.Open(sPath)
                              oExcel.Application.Windows(1).Visible = True
@@ -275,9 +274,7 @@ bExists = FileExists_TSB(sPath)
 resumeSaveFile:
 '-------------------------------Quick Export of data to Excel Using ADO!---------------------------------------------------
                             Set rsTab = db.OpenRecordset(tabstr, dbOpenDynaset)
-                            
-                                        
-                         
+
                             rsTab.MoveFirst
                             rsTab.MoveLast
                             rsTab.MoveFirst
@@ -328,7 +325,7 @@ resumeSaveFile:
                                                     
                            
                            rsa.Open tableString, conn
-                           oSheet.Range("A2").CopyFromRecordset rsa
+                           oSheet.Range("A5").CopyFromRecordset rsa
                              iCounter = iCounter + 1
                               
                               rsTab.MoveNext
@@ -354,15 +351,14 @@ resumeSaveFile:
                                 End With
                             Call SetMousePointer_TSB(0)
     End If
-    
 'it worked
-
 Call SetMousePointer_TSB(0)
           [Forms]![frmReportLauncher]![txtFolderPathChart].Visible = True
           [Forms]![frmReportLauncher]![txtFolderPathChart].Caption = sPath
           [Forms]![frmReportLauncher]![txtFolderPathChart].HyperlinkAddress = sPath
 Beep
 MsgBox "Click on hyperlink to retrieve workbook", vbInformation, "Excel Workbook Created"
+
 '-----------------------------------------------------------------------------------------------------------------------------------------
 Exit Function
 
