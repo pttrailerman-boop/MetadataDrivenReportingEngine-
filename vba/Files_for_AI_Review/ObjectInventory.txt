@@ -1,59 +1,59 @@
 ACCESS PROJECT EXPORT
 ==============================================================================
-Database: C:\SD_KPI\ReportKPI.accdb
-Exported: 2026-10-22 08:02:46
-Export folder: C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246
+Database: C:\test folder\ReportMedicareDemo.accdb
+Exported: 2026-10-22 01:55:33
+Export folder: C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533
 
 TYPE	OBJECT NAME	FILE
 
-FORM	qryKPI_Results	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Forms\qryKPI_Results.txt
-FORM	frmReportLauncher	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Forms\frmReportLauncher.txt
-FORM	frmReportManager	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Forms\frmReportManager.txt
-MODULE	modOpenFile	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modOpenFile.txt
-MODULE	basBrowse	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\basBrowse.txt
-MODULE	clsCreateRecord	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\clsCreateRecord.txt
-MODULE	modCreateQdef	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modCreateQdef.txt
-MODULE	modMousePointer	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modMousePointer.txt
-MODULE	modExportToExcel	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modExportToExcel.txt
-MODULE	mod_IsReportOpen	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\mod_IsReportOpen.txt
-MODULE	clsExport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\clsExport.txt
-MODULE	Connections	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\Connections.txt
-MODULE	modExportAccessProject	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modExportAccessProject.txt
-MODULE	modExportMetadata	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Modules\modExportMetadata.txt
-QUERY	qryBegin_Yr	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryBegin_Yr.sql
-QUERY	qryCreateKPI_Month_Results	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryCreateKPI_Month_Results.sql
-QUERY	qryCreateQName	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryCreateQName.sql
-QUERY	qryDelete_aq_KPI_Results_Monthly	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryDelete_aq_KPI_Results_Monthly.sql
-QUERY	qryDelete_aq_KPI_Results_Special	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryDelete_aq_KPI_Results_Special.sql
-QUERY	qryDelete_aq_tblSorKPI_MonthlyReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryDelete_aq_tblSorKPI_MonthlyReport.sql
-QUERY	qryDelete_aq_tblSorKPI_SpecialReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryDelete_aq_tblSorKPI_SpecialReport.sql
-QUERY	qryDeleteTempSortGroup	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryDeleteTempSortGroup.sql
-QUERY	qryEnd_yr	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryEnd_yr.sql
-QUERY	qryFinalSecondAnalysis	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryFinalSecondAnalysis.sql
-QUERY	qryInsertInto_SorKPI_MonthlyReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryInsertInto_SorKPI_MonthlyReport.sql
-QUERY	qryInsertInto_SorKPI_SpeicalReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryInsertInto_SorKPI_SpeicalReport.sql
-QUERY	qryKPI_Results_Monthly	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryKPI_Results_Monthly.sql
-QUERY	qryKPI_Results_Monthly_2	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryKPI_Results_Monthly_2.sql
-QUERY	qryKPI_Results_Special_2	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryKPI_Results_Special_2.sql
-QUERY	qryKPI_Results_Specials	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qryKPI_Results_Specials.sql
-QUERY	qrySortingAndGrouping	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\qrySortingAndGrouping.sql
-QUERY	spcngStrToTab	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\spcngStrToTab.sql
-QUERY	spcngStrToTab_1	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\spcngStrToTab_1.sql
-QUERY	spcngStrToTab_2	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\Queries\spcngStrToTab_2.sql
-TABLE	KPI_Results_Monthly	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\KPI_Results_Monthly.txt
-TABLE	KPI_Results_Special	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\KPI_Results_Special.txt
-TABLE	qryKPI_Results	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\qryKPI_Results.txt
-TABLE	tbl_ReviewNewData	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tbl_ReviewNewData.txt
-TABLE	tbl_temp_sorting_grouping	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tbl_temp_sorting_grouping.txt
-TABLE	tblFormat	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblFormat.txt
-TABLE	tblFormula	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblFormula.txt
-TABLE	tblGoodFieldName_G_Totals	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblGoodFieldName_G_Totals.txt
-TABLE	tblGoodFieldName_Header	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblGoodFieldName_Header.txt
-TABLE	tblGoodFieldName_Report	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblGoodFieldName_Report.txt
-TABLE	tblGoodFieldName_ReportCache	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblGoodFieldName_ReportCache.txt
-TABLE	tblNameHolder	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblNameHolder.txt
-TABLE	tblProjects	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblProjects.txt
-TABLE	tblReports	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblReports.txt
-TABLE	tblReportSequence	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblReportSequence.txt
-TABLE	tblSorKPI_MonthlyReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblSorKPI_MonthlyReport.txt
-TABLE	tblSorKPI_SpecialReport	C:\SD_KPI\ExportedKPI\ReportKPI_Export_20261022_080246\TableSchemas\tblSorKPI_SpecialReport.txt
+FORM	qryKPI_Results	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Forms\qryKPI_Results.txt
+FORM	frmReportLauncher	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Forms\frmReportLauncher.txt
+FORM	frmReportManager	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Forms\frmReportManager.txt
+FORM	frm_Subfrm_Medicare_ReportFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Forms\frm_Subfrm_Medicare_ReportFinal.txt
+MODULE	modOpenFile	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\modOpenFile.txt
+MODULE	basBrowse	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\basBrowse.txt
+MODULE	clsCreateRecord	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\clsCreateRecord.txt
+MODULE	modMousePointer	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\modMousePointer.txt
+MODULE	Connections	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\Connections.txt
+MODULE	mod_IsReportOpen	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\mod_IsReportOpen.txt
+MODULE	modExportToExcel	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\modExportToExcel.txt
+MODULE	clsExport	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\clsExport.txt
+MODULE	modCreateQdef	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\modCreateQdef.txt
+MODULE	modExportAccessProject	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Modules\modExportAccessProject.txt
+QUERY	qryCreateQName	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryCreateQName.sql
+QUERY	qryDelete_aq_Medicare_ReportFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryDelete_aq_Medicare_ReportFinal.sql
+QUERY	qryDelete_aq_tblSort_MedicareFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryDelete_aq_tblSort_MedicareFinal.sql
+QUERY	qryDelete_aq_tblSortMedicareFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryDelete_aq_tblSortMedicareFinal.sql
+QUERY	qryDeleteTempSortGroup	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryDeleteTempSortGroup.sql
+QUERY	qryInsertInto_tblSortMedicareFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryInsertInto_tblSortMedicareFinal.sql
+QUERY	qryMake_Medicare_ReportSummary	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryMake_Medicare_ReportSummary.sql
+QUERY	qryMake_Medicare_ReportTest	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryMake_Medicare_ReportTest.sql
+QUERY	qryMedicare_ReportFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryMedicare_ReportFinal.sql
+QUERY	qryMedicareReport_Final	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryMedicareReport_Final.sql
+QUERY	qryRBCS_Current	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryRBCS_Current.sql
+QUERY	qryRBCS_MaxReleaseYear	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryRBCS_MaxReleaseYear.sql
+QUERY	qryRBCS_Normalized_Base	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qryRBCS_Normalized_Base.sql
+QUERY	qrySortingAndGrouping	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\qrySortingAndGrouping.sql
+QUERY	spcngStrToTab	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\spcngStrToTab.sql
+QUERY	spcngStrToTab_1	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\spcngStrToTab_1.sql
+QUERY	spcngStrToTab_2	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\Queries\spcngStrToTab_2.sql
+TABLE	Medicare_PHYS_24	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\Medicare_PHYS_24.txt
+TABLE	Medicare_ReportFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\Medicare_ReportFinal.txt
+TABLE	RBCS_Taxonomy_Final_RY26_20260731	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\RBCS_Taxonomy_Final_RY26_20260731.txt
+TABLE	tbl_ReviewNewData	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tbl_ReviewNewData.txt
+TABLE	tbl_temp_sorting_grouping	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tbl_temp_sorting_grouping.txt
+TABLE	tblFormat	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblFormat.txt
+TABLE	tblFormula	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblFormula.txt
+TABLE	tblGoodFieldName_G_Totals	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblGoodFieldName_G_Totals.txt
+TABLE	tblGoodFieldName_Header	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblGoodFieldName_Header.txt
+TABLE	tblGoodFieldName_Report	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblGoodFieldName_Report.txt
+TABLE	tblGoodFieldName_ReportCache	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblGoodFieldName_ReportCache.txt
+TABLE	tblMedicare_ReportSummary	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblMedicare_ReportSummary.txt
+TABLE	tblMedicare_ReportSummary - Test	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblMedicare_ReportSummary - Test.txt
+TABLE	tblMedicare_ReportTest	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblMedicare_ReportTest.txt
+TABLE	tblNameHolder	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblNameHolder.txt
+TABLE	tblProjects	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblProjects.txt
+TABLE	tblRBCS_Current	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblRBCS_Current.txt
+TABLE	tblReports	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblReports.txt
+TABLE	tblReportSequence	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblReportSequence.txt
+TABLE	tblSort_MedicareFinal	C:\test folder\InventoryTXT\ReportMedicareDemo_Export_20261022_015533\TableSchemas\tblSort_MedicareFinal.txt
