@@ -1,6 +1,6 @@
 # Metadata-Driven Excel Reporting Engine
 
-A Microsoft Access reporting framework that turns ordered SQL, report metadata, sorting tables, and Excel COM automation into structured `.xlsx` workbooks.
+Metadata-driven Excel reporting engine using Access, SQL, VBA, and COM automation to generate grouped business workbooks from configurable pipelines.
 
 This repository demonstrates a practical reporting architecture for recurring business reports that need more than a flat data export but do not require a specialized financial, scientific, or engineering reporting platform. The engine separates application-specific data preparation from reusable workbook construction, making it possible to generate grouped report bands, formulas, subtotals, grand totals, hidden helper columns, and charts from metadata.
 
