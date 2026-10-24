@@ -3,7 +3,7 @@
 
 [Back to project README](../README.md) | [Getting Started](GettingStarted.md) | [Report Header Reference](ReportHeaderReference.md) | [Metadata Configuration Guide](MetadataConfigurationGuide.md) | [`tblReportSequence` Reference](TblReportSequenceReference.md) | [Troubleshooting](Troubleshooting.md) | [Medicare Pipeline](WorkedExamples/MedicarePipeline.md) | [KPI Pipeline](WorkedExamples/KPIPipeline.md)
 
-**Author:** Alex F. 
+**Author:** Alex F.  
 **Technology:** Microsoft Access, Access SQL, DAO, ADO, VBA, Excel COM automation  
 **Reference implementations:** Medicare reporting demo and KPI reporting demo
 
@@ -384,7 +384,10 @@ tblGoodFieldName_Report H1
 The Medicare reference implementation requires `fn_FindBreaks` to begin the generated report-band area at row 10 or later:
 
 ```vb
+'Standard module
 Public Const RECORDSET_START_ROW As Long = 2
+
+'Inside fn_FindBreaks
 Const beginSheet As Long = 10
 ```
 `RECORDSET_START_ROW` identifies the initial row position of the exported records before report-band rows are inserted. The same public constant is used by both the ADO transfer routine and `fn_FindBreaks`.
@@ -895,7 +898,10 @@ The worksheet-level header requires reserved rows above the first generated repo
 For the Medicare reference implementation:
 
 ```vb
+'Standard module
 Public Const RECORDSET_START_ROW As Long = 2
+
+'Inside fn_FindBreaks
 Const beginSheet As Long = 10
 ```
 
@@ -986,17 +992,26 @@ Partial adoption is a valid outcome. A developer may reuse one architectural ide
 
 The framework trades initial configuration complexity for reuse across recurring reports.
 
-## 27. Future Documentation and Extension Points
+## 27. Documentation and Extension Points
 
 The repository documentation now includes:
 
+- A practical quick-start guide
+- A getting-started guide
 - A field-by-field metadata configuration guide
 - A complete `tblReportSequence` reference
+- A worksheet-header reference
 - A worked Medicare SQL pipeline
 - A worked KPI pipeline
-- A formula-pattern cookbook
 - A troubleshooting guide
-- Annotated screenshots of forms, report bands, helper columns, and charts
+- Screenshots of forms, workflows, and helper columns
+
+Potential documentation additions include:
+
+- A formula-pattern cookbook
+- Additional annotated workbook examples
+- A metadata-validation reference
+- Additional worked report families
 
 Potential code extensions include:
 
@@ -1007,10 +1022,12 @@ Potential code extensions include:
 - Improved COM cleanup
 - Logging and timing instrumentation
 - A formal schema version for metadata tables
+- Persistent workbook-layout history for querying generated worksheet coordinates
 
 ## Related Documentation
 
 - [Project README](../README.md)
+- [Practical Quick Start](PracticalQuickStart.md)
 - [Getting Started](GettingStarted.md)
 - [Report Header Reference](ReportHeaderReference.md)
 - [Metadata Configuration Guide](MetadataConfigurationGuide.md)
