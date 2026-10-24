@@ -50,6 +50,19 @@ Excel
     v
 Standalone XLSX workbook
 ```
+The worksheet is treated as a numeric coordinate space. The break engine determines the vertical row coordinates, while metadata and column-conversion utilities determine the horizontal column coordinates. Once both dimensions are known, the renderer can address and control any cell, range, report band, helper region, subtotal, grand-total block, or chart source within a worksheet.
+
+The workbook adds another coordinate to the model:
+
+```text
+Workbook
+    -> worksheet
+    -> report band
+    -> report zone
+    -> row
+    -> column
+```
+
 ## 2. The Reporting Problem
 
 Business users frequently need an Excel workbook because Excel is familiar, portable, inspectable, and easy to distribute. The source facts may already exist in Access, SQL Server, linked tables, or public datasets, but the expected deliverable is not a raw recordset.
@@ -239,8 +252,9 @@ The final transfer is recordset-oriented rather than table-specific:
 ```vb
 TableString = Trim(rsTab![QueryName])
 rsa.Open TableString, conn
-oSheet.Range("A2").CopyFromRecordset rsa
+oSheet.Range("A" & RECORDSET_START_ROW).CopyFromRecordset rsa
 ```
+`RECORDSET_START_ROW` is a public constant shared by the ADO transfer routine and the break-calculation logic. In the current implementation, its value is `2`. Using one shared value prevents the transfer routine and `fn_FindBreaks` from developing different assumptions about where the original records begin.
 
 ADO opens the configured named source and copies the returned records into Excel. The public configurations use materialized local tables as final worksheet sources. The implementation also supports creating a saved select QueryDef with `Exec = False`; a saved query can therefore serve as a final source when it returns the required fields, preserves the required ordering, and has no unresolved parameters. This direct-query path is supported by the code but is not represented by the supplied demo configurations.
 
