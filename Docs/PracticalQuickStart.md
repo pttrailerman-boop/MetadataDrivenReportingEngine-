@@ -12,6 +12,28 @@ The complete documentation explains the engine's internal architecture, but a de
 
 The goal is not to design every metadata record from scratch. The goal is to begin with a proven report definition and turn metadata configuration into a controlled tuning exercise.
 
+## Who This Guide Is For
+
+This guide is intended for analysts and Access developers who regularly produce structured Excel workbooks through a mixture of custom SQL, exports, macros, manual formatting, formulas, subtotals, and chart preparation.
+
+If every reporting cycle requires rebuilding or repairing many of the same workbook elements, the initial effort required to learn this engine can be worthwhile. The engine preserves the reusable reporting machinery so that recurring and related reports can begin from a working SQL, sequencing, metadata, and rendering pattern rather than from another one-off workbook automation project.
+
+The learning process is practical rather than purely theoretical. Expect to:
+
+- Begin with a working demonstration
+- Copy existing sequence and metadata records
+- Substitute a small representative dataset
+- Generate an imperfect first workbook
+- Inspect how the output responds to the configuration
+- Adjust one or two settings at a time
+- Repeat until the report matches the intended design
+
+The architecture usually becomes much easier to understand after the first complete report has been configured. Developers do not need to master every internal routine before experimenting, but they should preserve the documented data, sorting, sequencing, and metadata contracts.
+
+> The engine does not eliminate programming. It eliminates repeatedly programming the same reporting machinery.
+
+## 1. Begin with a Working Demonstration
+
 ## 1. Begin with a Working Demonstration
 
 Choose the supplied demonstration that most closely resembles the report you want to create.
