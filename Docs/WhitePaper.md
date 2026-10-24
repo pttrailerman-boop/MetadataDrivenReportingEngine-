@@ -15,7 +15,42 @@ The engine separates application-specific data preparation from reusable workboo
 
 The architecture originated in 2009 from a practical need to create Excel reports that were more than data dumps. It has since been reused for multiple reporting problems. The public repository includes two complementary demonstrations: the current Medicare reference implementation and an earlier KPI implementation that demonstrates multiple worksheets, multiple charts, hidden formula columns, running footer calculations, and broader orchestration.
 
-## 1. The Reporting Problem
+## 1. Relational Principles Applied to Spreadsheet Construction
+
+The engine applies relational database principles to spreadsheet construction.
+
+SQL defines the business result and prepares the records in their required order. Sorting and grouping tables describe the logical structure of the report. Microsoft Access calculates the physical worksheet coordinates required for each report band. Excel performs the final calculation, presentation, charting, and workbook rendering.
+
+The workbook is therefore an output of a database-controlled report model rather than the primary location of the reporting logic.
+
+This distinction shaped the architecture from the beginning. A conventional Excel-centered solution might start with a workbook template containing formulas, named ranges, tables, formatting, and macros. Over time, the workbook can become both the application and the report.
+
+This engine takes the opposite approach:
+
+```text
+Relational data and SQL
+    |
+    | define the business result and record order
+    v
+Sorting and grouping tables
+    |
+    | describe the logical report structure
+    v
+Break calculations
+    |
+    | determine physical worksheet coordinates
+    v
+Report metadata
+    |
+    | defines formulas, formatting, and report zones
+    v
+Excel
+    |
+    | calculates and presents the final business artifact
+    v
+Standalone XLSX workbook
+```
+## 2. The Reporting Problem
 
 Business users frequently need an Excel workbook because Excel is familiar, portable, inspectable, and easy to distribute. The source facts may already exist in Access, SQL Server, linked tables, or public datasets, but the expected deliverable is not a raw recordset.
 
@@ -41,19 +76,19 @@ The intended niche is therefore:
 
 The engine is strongest when the primary challenge is constructing a complex recurring workbook from prepared data rather than performing advanced analytical computation.
 
-## 2. Design Goals
+## 3. Design Goals
 
 The framework was designed around several practical goals.
 
-### 2.1 Preserve the host application's data architecture
+### 3.1 Preserve the host application's data architecture
 
 The engine does not require an application to abandon its existing tables, saved queries, forms, or SQL process. The host application prepares a final record source using the approach appropriate to its business problem.
 
-### 2.2 Separate data preparation from presentation
+### 3.2 Separate data preparation from presentation
 
 SQL should define the report-ready facts, grouping keys, classifications, and sort values. Metadata and VBA should define workbook structure, formulas, and presentation behavior.
 
-### 2.3 Reuse one renderer across multiple reports
+### 3.3 Reuse one renderer across multiple reports
 
 A new report should be able to reuse the same workbook-generation components by supplying:
 
@@ -63,15 +98,15 @@ A new report should be able to reuse the same workbook-generation components by 
 - Report metadata
 - Optional chart-specific code
 
-### 2.4 Support variable-length report bands
+### 3.4 Support variable-length report bands
 
 The renderer must construct groups whose detail sections contain different numbers of records while still placing headers, subtotals, footers, and formulas correctly.
 
-### 2.5 Produce a standalone workbook
+### 3.5 Produce a standalone workbook
 
 The output should be a normal `.xlsx` file that can be opened without Microsoft Access after generation.
 
-## 3. Architectural Overview
+## 4. Architectural Overview
 
 The architecture has three major layers.
 
@@ -103,7 +138,7 @@ Worksheet-header metadata
 Standalone XLSX workbook
 ```
 
-### 3.1 Layer 1: Host application
+### 4.1 Layer 1: Host application
 
 The host application owns source-specific behavior:
 
@@ -116,7 +151,7 @@ The host application owns source-specific behavior:
 
 The public forms demonstrate where this logic belongs. Their **Get Data** buttons are instructional because the public demos include prepared sample data rather than live private retrieval logic.
 
-### 3.2 Layer 2: Report orchestrator
+### 4.2 Layer 2: Report orchestrator
 
 `frmReportLauncher` is the bridge between the host application and the reusable renderer. It:
 
@@ -129,7 +164,7 @@ The public forms demonstrate where this logic belongs. Their **Get Data** button
 - Maps sorting/grouping sources to worksheets
 - Calls `createSpreadsheetReport`
 
-### 3.3 Layer 3: Workbook generator
+### 4.3 Layer 3: Workbook generator
 
 `modExportToExcel` and `clsExport` perform the workbook work:
 
@@ -148,7 +183,7 @@ The public forms demonstrate where this logic belongs. Their **Get Data** button
 - Create charts
 - Recalculate and save the workbook
 
-## 4. `tblReportSequence` as an Execution Manifest
+## 5. `tblReportSequence` as an Execution Manifest
 
 `tblReportSequence` is the central orchestration table. It is not merely a list of reports. It describes an ordered workflow.
 
@@ -171,7 +206,7 @@ Important fields include:
 - `Over_ride_foot1`: optional primary-footer allocation
 - `Notes`: implementation guidance
 
-### 4.1 Object lifecycle
+### 5.1 Object lifecycle
 
 Rows follow one of two preparation paths.
 
@@ -188,7 +223,7 @@ isTable? = False
 
 This distinction matters because the pipeline can contain both object definitions and output-table markers.
 
-### 4.2 Action queries and saved select queries
+### 5.2 Action queries and saved select queries
 
 `clsCreateRecord` creates a saved QueryDef from the SQL stored in the sequence row.
 
@@ -197,7 +232,7 @@ This distinction matters because the pipeline can contain both object definition
 
 The demonstrated pipelines use action QueryDefs containing `SELECT ... INTO` statements to materialize final worksheet tables and sorting tables.
 
-### 4.3 Final worksheet transfer
+### 5.3 Final worksheet transfer
 
 The final transfer is recordset-oriented rather than table-specific:
 
@@ -209,7 +244,7 @@ oSheet.Range("A2").CopyFromRecordset rsa
 
 ADO opens the configured named source and copies the returned records into Excel. The public configurations use materialized local tables as final worksheet sources. The implementation also supports creating a saved select QueryDef with `Exec = False`; a saved query can therefore serve as a final source when it returns the required fields, preserves the required ordering, and has no unresolved parameters. This direct-query path is supported by the code but is not represented by the supplied demo configurations.
 
-## 5. Worksheet and Spacing Association
+## 6. Worksheet and Spacing Association
 
 The launcher builds separate views of `tblReportSequence` for:
 
@@ -228,7 +263,7 @@ The final association joins the spacing definition to the worksheet definition w
 
 This design permits one workbook definition to coordinate multiple worksheets and multiple grouping sources without hard-coding each worksheet inside the transfer routine.
 
-## 6. The Sorting-Table Contract
+## 7. The Sorting-Table Contract
 
 The worksheet source contains the records displayed in Excel. The sorting table contains a compact inventory of the groups into which those records will be divided.
 
@@ -249,21 +284,21 @@ SortKey    Description       RecordCount
 
 The sorting table does not contain the detail records. It tells the break engine how many records belong to each ordered group.
 
-### 6.1 Why field order matters
+### 7.1 Why field order matters
 
 `fn_FindBreaks` depends on the required headers and positions. A sorting table may contain correct values and still fail if the required first fields are missing, misnamed, or arranged incorrectly.
 
 The sorting table should be treated as a formal interface contract, not as an informal helper query.
 
-## 7. Break Calculation and Physical Row Planning
+## 8. Break Calculation and Physical Row Planning
 
 Before the engine formats the workbook, it must convert logical group counts into physical Excel coordinates.
 
-### 7.1 `tblNameHolder`
+### 8.1 `tblNameHolder`
 
 The renderer creates or clears `tblNameHolder` and adds the name of each grouping source associated with the current worksheet. This table supplies the ordered grouping levels used by the recursive break calculation.
 
-### 7.2 `fn_FindBreaks`
+### 8.2 `fn_FindBreaks`
 
 `fn_FindBreaks` recursively evaluates the grouping sources and writes the calculated layout into `tbl_temp_sorting_grouping`.
 
@@ -281,7 +316,7 @@ The resulting rows contain values such as:
 
 These calculated coordinates become the physical map for the workbook.
 
-### 7.3 `fn_break`
+### 8.3 `fn_break`
 
 `fn_break` inserts the required rows into Excel so the copied recordset becomes a report layout. The engine then formats the inserted header, body, detail, and footer regions using the calculated coordinates.
 
@@ -293,7 +328,7 @@ Copy source records
     -> insert physical rows
     -> apply formulas and formatting
 ```
-### 7.4 Reserved worksheet-header rows
+### 8.4 Reserved worksheet-header rows
 
 The one-time worksheet header occupies reserved rows above the first generated report band. This header is controlled by `tblGoodFieldName_Header`, not by the repeating H1 metadata.
 
@@ -321,7 +356,7 @@ beginSheet > final worksheet-header row
 ```
 For complete header-field definitions and Medicare examples, see the [Report Header Reference](ReportHeaderReference.md).
 
-## 8. Report-Band Anatomy
+## 9. Report-Band Anatomy
 
 The report-band zones described in this section repeat for each grouping band. They are separate from the one-time worksheet header defined in `tblGoodFieldName_Header`.
 
@@ -335,7 +370,7 @@ F1   Primary subtotal or summary row
 F2   Extended footer or additional summary rows
 ```
 
-### 8.1 H1: Repeating primary group header
+### 9.1 H1: Repeating primary group header
 
 The H1 zone can contain:
 
@@ -346,15 +381,15 @@ The H1 zone can contain:
 - Merged header content
 - Section-wide fill and border formatting
 
-### 8.2 B: Column-heading row
+### 9.2 B: Column-heading row
 
 The B zone provides visible headings for the detail columns. A heading may be supplied directly from `FieldName_B` or obtained from another configured source.
 
-### 8.3 B_D: Detail-data region
+### 9.3 B_D: Detail-data region
 
 The B_D zone applies formatting and formulas to the report records. It controls alignment, number formats, fonts, colors, row height, borders, merge instructions, and metadata-generated formulas.
 
-### 8.4 F1: Primary subtotal row
+### 9.4 F1: Primary subtotal row
 
 The F1 zone commonly contains:
 
@@ -364,19 +399,19 @@ The F1 zone commonly contains:
 - Values copied from the final detail row
 - Formula-token expressions
 
-### 8.5 F2: Extended footer
+### 9.5 F2: Extended footer
 
 The F2 zone can contain multiple positioned rows. It is suitable for additional metrics, running values, summary panels, or values retrieved from hidden helper columns.
 
-### 8.6 Grand totals
+### 9.6 Grand totals
 
 `tblGoodFieldName_G_Totals` controls report-level totals after ordinary report bands have been completed. Grand totals are separate from F1 and F2 because they summarize the full report rather than a single group.
 
-## 9. Metadata Must Be Read in Two Dimensions
+## 10. Metadata Must Be Read in Two Dimensions
 
 One of the least obvious aspects of the design is that the metadata table must be interpreted both vertically and horizontally.
 
-### 9.1 Vertical dimension: metadata record as Excel column
+### 10.1 Vertical dimension: metadata record as Excel column
 
 Each metadata record normally represents an Excel destination column. Fields such as these are evaluated for each record:
 
@@ -397,7 +432,7 @@ Metadata row for L -> configure Excel column L
 Metadata row for M -> configure Excel column M
 ```
 
-### 9.2 Horizontal dimension: metadata fields as report-zone instructions
+### 10.2 Horizontal dimension: metadata fields as report-zone instructions
 
 Some fields do not describe one cell in one output column. They describe a shared H1, F2, body boundary, or multi-column range.
 
@@ -411,7 +446,7 @@ The renderer often:
 
 The first sorted metadata record should therefore be treated as the authoritative configuration row for section-wide properties.
 
-### 9.3 Four metadata behavior classes
+### 10.3 Four metadata behavior classes
 
 A useful documentation classification is:
 
@@ -431,13 +466,13 @@ U  List_B, ErrorTitle_B, ErrorMessage_B, Lock_B
 
 This classification prevents a common mistake: placing a section-wide setting on a later metadata row and expecting it to override the first row.
 
-## 10. Formula Templates and Tokens
+## 11. Formula Templates and Tokens
 
 The formula-token system allows metadata to store reusable Excel formula templates without knowing the final worksheet row numbers.
 
 Formula metadata is stored without a leading equals sign. The VBA renderer adds `=` when assigning the formula to Excel.
 
-### 10.1 `?`: context row
+### 11.1 `?`: context row
 
 In `Range_B_D`, `?` is replaced with the first detail row before Excel fills the formula through the selected range.
 
@@ -455,11 +490,11 @@ Excel then adjusts relative references as the formula is filled through the deta
 
 In `Range_F1`, `?` refers to the footer context used by that routine.
 
-### 10.2 `@`: first detail row
+### 11.2 `@`: first detail row
 
 In footer formulas, `@` represents the first detail row of the current band.
 
-### 10.3 `#`: last detail row
+### 11.3 `#`: last detail row
 
 In footer formulas, `#` represents the final detail row of the current band.
 
@@ -473,7 +508,7 @@ For a band covering rows 18 through 35, the engine produces:
 =SUM(K18:K35)
 ```
 
-### 10.4 Engine-resolved and workbook-resolved logic
+### 11.4 Engine-resolved and workbook-resolved logic
 
 The formula system combines two calculation layers:
 
@@ -487,7 +522,7 @@ Workbook-resolved logic
 
 This makes the formula layer substantially more flexible than a collection of fixed cell references.
 
-## 11. Hidden Helper Columns as a Calculation Workspace
+## 12. Hidden Helper Columns as a Calculation Workspace
 
 Not every output column must come from the SQL source. A developer can add a metadata record for an additional Excel column, place a formula in `Range_B_D` or another supported formula field, hide the column, and reuse the result elsewhere in the workbook.
 
@@ -513,7 +548,7 @@ Prepared SQL facts
     -> charts and summaries
 ```
 
-## 12. KPI Running-Count Example
+## 13. KPI Running-Count Example
 
 The KPI demo provides a concrete example of hidden helper calculations feeding visible footer values.
 
@@ -543,11 +578,11 @@ This example demonstrates four reusable ideas:
 3. Formulas that distinguish data rows from structural rows
 4. Selective projection of hidden results into visible footers
 
-## 13. Choosing Where a Calculation Belongs
+## 14. Choosing Where a Calculation Belongs
 
 The framework supports several places for calculations. The correct location depends on the purpose of the value.
 
-### 13.1 Calculate in Access SQL when the value is:
+### 14.1 Calculate in Access SQL when the value is:
 
 - Required for filtering
 - Required for grouping
@@ -555,7 +590,7 @@ The framework supports several places for calculations. The correct location dep
 - Shared by multiple outputs
 - Part of the business-data definition
 
-### 13.2 Calculate in a hidden Excel helper column when the value is:
+### 14.2 Calculate in a hidden Excel helper column when the value is:
 
 - Presentation-specific
 - Needed only by the workbook
@@ -563,7 +598,7 @@ The framework supports several places for calculations. The correct location dep
 - Used by another Excel formula
 - Intended to feed a footer or chart
 
-### 13.3 Calculate directly in a report zone when the value is:
+### 14.3 Calculate directly in a report zone when the value is:
 
 - A subtotal
 - A grand total
@@ -573,7 +608,7 @@ The framework supports several places for calculations. The correct location dep
 
 This separation prevents the two most common extremes: forcing every presentation calculation into SQL or placing core business logic entirely inside Excel.
 
-## 14. Default and Override Behavior
+## 15. Default and Override Behavior
 
 The renderer defines default row allocations for primary and secondary headers and footers. In the current Medicare implementation:
 
@@ -585,7 +620,7 @@ This behavior is important because a blank override should mean “use the frame
 
 When custom overrides are supplied, they must still provide enough rows for the metadata positions and formulas used by the report.
 
-## 15. Workbook Rendering Lifecycle
+## 16. Workbook Rendering Lifecycle
 
 The overall workbook lifecycle is:
 
@@ -613,18 +648,18 @@ The overall workbook lifecycle is:
 
 The current Medicare renderer explicitly restores automatic calculation, forces full calculation, runs a full calculation rebuild, and processes pending events before saving. This prevents a workbook constructed under manual calculation mode from being saved with stale formula values.
 
-## 16. Reference Implementation: Medicare Demo
+## 17. Reference Implementation: Medicare Demo
 
 The Medicare demo is the current reference implementation.
 
-### 16.1 Source data
+### 17.1 Source data
 
 The demo uses:
 
 - CMS 2024 Medicare Physician and Other Practitioners data imported as `Medicare_PHYS_24`
 - CMS RY2026 RBCS taxonomy imported as `RBCS_Taxonomy_Final_RY26_20260731`
 
-### 16.2 Taxonomy preparation
+### 17.2 Taxonomy preparation
 
 `qryRBCS_Normalized_Base` trims and renames taxonomy fields and converts analysis dates and the first release year.
 
@@ -632,7 +667,7 @@ The demo uses:
 
 A current-RBCS query joins normalized rows to the maximum release year by HCPCS code and release year, producing `tblRBCS_Current`.
 
-### 16.3 Medicare aggregation
+### 17.3 Medicare aggregation
 
 The Medicare source is left-joined to the current RBCS table by HCPCS code, filtered to Texas, and grouped by:
 
@@ -644,7 +679,7 @@ The Medicare source is left-joined to the current RBCS table by HCPCS code, filt
 
 Estimated totals are calculated by multiplying service counts by the source averages. The result is written to `tblMedicare_ReportSummary`.
 
-### 16.4 Final report source
+### 17.4 Final report source
 
 The final report query adds:
 
@@ -656,7 +691,7 @@ The final report query adds:
 
 The final source is paired with a sorting table and passed to the renderer.
 
-### 16.5 Workbook output
+### 17.5 Workbook output
 
 The Medicare output demonstrates:
 
@@ -668,7 +703,7 @@ The Medicare output demonstrates:
 - A Medicare Top 10 chart
 - Explicit recalculation before save
 
-### 16.6 Worksheet-level header
+### 17.6 Worksheet-level header
 
 The Medicare worksheet uses `tblGoodFieldName_Header` to create a one-time report header above the repeating RBCS bands.
 
@@ -691,15 +726,15 @@ The generated timestamp follows this Excel expression pattern:
 
 The one-time worksheet header is independent of the repeating H1 zone. The header is created once, while H1 is rendered for every RBCS report band.
 
-## 17. Reference Implementation: KPI Demo
+## 18. Reference Implementation: KPI Demo
 
 The KPI demo is an earlier implementation retained because it demonstrates broader workbook composition.
 
-### 17.1 Prepared source
+### 18.1 Prepared source
 
 The object named `qryKPI_Results` is a local prepared table despite its query-style prefix. It contains the common KPI fields used by both branches.
 
-### 17.2 Monthly and Special branches
+### 18.2 Monthly and Special branches
 
 Saved select queries filter the prepared source into Monthly and Special result sets and attach the beginning and ending reporting years.
 
@@ -710,7 +745,7 @@ Saved select queries filter the prepared source into Monthly and Special result 
 - `KPI_Results_Special`
 - `tblSorKPI_SpecialReport`
 
-### 17.3 Workbook output
+### 18.3 Workbook output
 
 The KPI workbook demonstrates:
 
@@ -725,7 +760,7 @@ The KPI workbook demonstrates:
 
 The KPI and Medicare demos therefore serve different purposes. Medicare represents the current engine baseline, while KPI demonstrates broader multi-sheet orchestration.
 
-## 18. Chart Generation
+## 19. Chart Generation
 
 Chart creation in the public implementations is code-based rather than a completely generic chart-metadata subsystem.
 
@@ -736,7 +771,7 @@ Charts are created after the report bands, formulas, and totals exist because th
 
 A future version could move more chart behavior into metadata, but the existing code demonstrates that the workbook pipeline can prepare chart-ready hidden columns, labels, summary ranges, and final chart sheets.
 
-## 19. Reserved and Unimplemented Metadata Fields
+## 20. Reserved and Unimplemented Metadata Fields
 
 The metadata schema contains fields that are not consumed by the current reference renderer. Populating a field does not activate behavior unless the VBA reads and applies that field.
 
@@ -752,7 +787,7 @@ Currently unconfirmed or unimplemented fields include:
 
 These fields should be described as reserved, legacy, or not implemented in the current reference renderer. They should not be presented as working features until code and test coverage are added.
 
-## 20. Development and Debugging Strategy
+## 21. Development and Debugging Strategy
 
 Metadata behaves like executable configuration. A small error in a field name, Excel letter, formula token, position, or sorting-table contract can produce a runtime error or a structurally incorrect workbook.
 
@@ -770,7 +805,7 @@ Copy a working metadata configuration
     -> run a volume test
 ```
 
-### 20.1 The 99-row Medicare test strategy
+### 21.1 The 99-row Medicare test strategy
 
 The Medicare demo includes a 99-row test source. This is large enough to exercise multiple report bands and formulas while remaining small enough for rapid rendering and manual review.
 
@@ -791,27 +826,27 @@ Recommended validation order:
 13. Verify chart source ranges.
 14. Restore full data and validate workbook recalculation.
 
-## 21. Error-Prone Areas
+## 22. Error-Prone Areas
 
 Developers adapting the engine should pay particular attention to:
 
-### 21.1 Sorting-table headers
+### 22.1 Sorting-table headers
 
 `fn_FindBreaks` expects a specific leading structure. Incorrect field names or positions can break the report map.
 
-### 21.2 Metadata sort order
+### 22.2 Metadata sort order
 
 The first sorted metadata record can be authoritative for section-wide formatting. Moving or hiding that record can change behavior unexpectedly.
 
-### 21.3 Formula syntax
+### 22.3 Formula syntax
 
 Formula metadata should normally omit the leading equals sign because the renderer supplies it.
 
-### 21.4 Band allocations
+### 22.4 Band allocations
 
 Header and footer positions must fit within the allocated number of rows. A custom override that is too small can cause overlap or misplaced output.
 
-### 21.5 Worksheet-header row reservation
+### 22.5 Worksheet-header row reservation
 
 The worksheet-level header requires reserved rows above the first generated report band.
 
@@ -824,19 +859,19 @@ Const beginSheet = 10
 
 If `beginSheet` is less than 10, or is not greater than the final worksheet-header row, report-band construction can overwrite, displace, or omit the worksheet header.
 
-### 21.6 Parameterized queries
+### 22.6 Parameterized queries
 
 A final saved query opened through ADO must have all parameters resolved before the transfer stage.
 
-### 21.7 Calculation mode
+### 22.7 Calculation mode
 
 The renderer may disable automatic calculation for performance. The workbook must be recalculated before save when formulas were created under manual calculation mode.
 
-### 21.8 Excel process cleanup
+### 22.8 Excel process cleanup
 
 Errors during COM automation can leave an Excel process open. Development testing should include cleanup and recovery procedures.
 
-## 22. Appropriate Use Cases
+## 23. Appropriate Use Cases
 
 The engine is well suited to recurring operational and analytical reports such as:
 
@@ -856,7 +891,7 @@ The engine is well suited to recurring operational and analytical reports such a
 
 It can also present finalized results from scientific, engineering, or financial systems when those results already exist in a suitable data source. It is not intended to perform the specialized underlying analysis itself.
 
-## 23. Out-of-Scope Use Cases
+## 24. Out-of-Scope Use Cases
 
 The engine is not intended to replace:
 
@@ -870,7 +905,7 @@ The engine is not intended to replace:
 
 These boundaries strengthen the project by defining a realistic and useful scope.
 
-## 24. Reuse and Adoption Model
+## 25. Reuse and Adoption Model
 
 The project does not require all adopters to use the entire database unchanged. Reuse can occur at several levels:
 
@@ -886,9 +921,9 @@ The project does not require all adopters to use the entire database unchanged. 
 
 Partial adoption is a valid outcome. A developer may reuse one architectural idea without adopting the complete renderer.
 
-## 25. Design Tradeoffs
+## 26. Design Tradeoffs
 
-### 25.1 Benefits
+### 26.1 Benefits
 
 - Keeps source-specific SQL outside the renderer
 - Allows report layouts to change without rewriting every VBA statement
@@ -897,7 +932,7 @@ Partial adoption is a valid outcome. A developer may reuse one architectural ide
 - Produces standalone Excel output
 - Encourages repeatable testing and configuration reuse
 
-### 25.2 Costs
+### 26.2 Costs
 
 - Metadata is dense and requires documentation
 - Some settings are not obvious from the table alone
@@ -909,7 +944,7 @@ Partial adoption is a valid outcome. A developer may reuse one architectural ide
 
 The framework trades initial configuration complexity for reuse across recurring reports.
 
-## 26. Future Documentation and Extension Points
+## 27. Future Documentation and Extension Points
 
 The repository documentation should continue with:
 
@@ -942,7 +977,7 @@ Potential code extensions include:
 - [Medicare Pipeline](WorkedExamples/MedicarePipeline.md)
 - [KPI Pipeline](WorkedExamples/KPIPipeline.md)
   
-## 27. Conclusion
+## 28. Conclusion
 
 The Metadata-Driven Excel Reporting Engine addresses a broad but often underserved business need: recurring Excel reports that are too complex for routine manual assembly or a flat export, but not specialized enough to justify a modeling platform.
 
