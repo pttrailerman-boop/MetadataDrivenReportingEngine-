@@ -213,7 +213,7 @@ The public forms demonstrate where this logic belongs. Their **Get Data** button
 - Create or replace the workbook
 - Create and name worksheets
 - Open configured sources through ADO
-- Copy records beginning at cell `A2`
+- Copy records beginning at the row defined by `RECORDSET_START_ROW`, currently cell `A2`
 - Calculate report breaks
 - Insert rows for report zones
 - Apply repeating report-band formatting from `tblGoodFieldName_Report`
@@ -384,10 +384,10 @@ tblGoodFieldName_Report H1
 The Medicare reference implementation requires `fn_FindBreaks` to begin the generated report-band area at row 10 or later:
 
 ```vb
-Const original = 2
-Const beginSheet = 10
+Public Const RECORDSET_START_ROW As Long = 2
+Const beginSheet As Long = 10
 ```
-`original` identifies the initial row position of the exported records before report-band rows are inserted.
+`RECORDSET_START_ROW` identifies the initial row position of the exported records before report-band rows are inserted. The same public constant is used by both the ADO transfer routine and `fn_FindBreaks`.
 
 `beginSheet` identifies where the first generated report band begins. If `beginSheet` is too low, report-band construction can occupy the rows reserved for the worksheet header.
 
@@ -895,8 +895,8 @@ The worksheet-level header requires reserved rows above the first generated repo
 For the Medicare reference implementation:
 
 ```vb
-Const original = 2
-Const beginSheet = 10
+Public Const RECORDSET_START_ROW As Long = 2
+Const beginSheet As Long = 10
 ```
 
 If `beginSheet` is less than 10, or is not greater than the final worksheet-header row, report-band construction can overwrite, displace, or omit the worksheet header.
@@ -988,7 +988,7 @@ The framework trades initial configuration complexity for reuse across recurring
 
 ## 27. Future Documentation and Extension Points
 
-The repository documentation should continue with:
+The repository documentation now includes:
 
 - A field-by-field metadata configuration guide
 - A complete `tblReportSequence` reference
