@@ -22,6 +22,9 @@ This repository demonstrates a practical reporting architecture for recurring bu
 
 ### Start Here
 
+- [Practical Quick Start](Docs/PracticalQuickStart.md)  
+  The fastest path to a working report: prepare a small source, build the sorting table, copy the four-row `tblReportSequence` pattern, clone working metadata, and iteratively tune the generated workbook.
+
 - [Getting Started](Docs/GettingStarted.md)  
   Step-by-step instructions for configuring a new report, worksheet source, sorting table, metadata layout, and `tblReportSequence`.
 
