@@ -418,6 +418,8 @@ Chart creation occurs after the worksheet sources, repeating report bands, formu
 ```text
 MetadataDrivenReportingEngine/
 |-- README.md
+|-- LICENSE
+|-- CITATION.cff
 |-- Docs/
 |   |-- PracticalQuickStart.md
 |   |-- GettingStarted.md
