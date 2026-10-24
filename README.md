@@ -438,7 +438,7 @@ MetadataDrivenReportingEngine/
 |   |-- Medicare_ReportManager.png
 |   |-- Medicare_ReportWorkflow.png
 |   `-- Medicare_HelperColumns.png
-|-- VBA/
+|-- vba/
 |   |-- basBrowse.txt
 |   |-- clsCreateRecord.txt
 |   |-- clsExport.txt
