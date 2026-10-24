@@ -447,7 +447,8 @@ MetadataDrivenReportingEngine/
 |   |-- modMousePointer.txt
 |   |-- modExportToExcel.txt
 |   |-- modCreateQdef.txt
-|   `-- mod_IsReportOpen.txt
+|   |-- mod_IsReportOpen.txt
+|   `-- Files_for_AI_Review/
 `-- Demo/
     |-- DemoKPI_ExcelWriter.xlsx
     |-- DemoMedicare_ExcelWriter.XLSX
