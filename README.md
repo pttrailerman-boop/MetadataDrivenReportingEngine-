@@ -525,6 +525,14 @@ This reporting architecture was originally developed by Alex Fritts in 2009 to a
 
 The engine evolved through later business-reporting applications and was eventually documented as a public reference implementation in 2026. The public repository preserves the architecture, source exports, demonstration databases, worked examples, and metadata conventions used to transform SQL-prepared data into structured Excel workbooks with variable-length report bands, formulas, totals, worksheet headers, helper columns, and charts.
 
+## License
+
+Copyright © 2026 Alex Fritts.
+
+This project is licensed under the GNU General Public License version 3. See the [LICENSE](LICENSE) file for the complete terms.
+
+You may use, study, modify, and redistribute this project under the terms of the license. Distributed modified versions must preserve the license and make the corresponding source code available.
+
 ## About the Author
 
 Alex Fritts is a workflow and reporting automation engineer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
