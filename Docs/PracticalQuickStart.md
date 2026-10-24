@@ -34,8 +34,6 @@ The architecture usually becomes much easier to understand after the first compl
 
 ## 1. Begin with a Working Demonstration
 
-## 1. Begin with a Working Demonstration
-
 Choose the supplied demonstration that most closely resembles the report you want to create.
 
 Use the Medicare demonstration when the new report resembles:
