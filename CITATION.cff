@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use or discuss this project, please cite it using the information below."
+title: "Metadata-Driven Excel Reporting Engine"
+type: software
+authors:
+  - family-names: "Fritts"
+    given-names: "Alex"
+repository-code: "https://github.com/pttrailerman-boop/MetadataDrivenReportingEngine-"
+license: "GPL-3.0-only"
+abstract: "A metadata-driven Excel reporting engine using Microsoft Access, SQL, VBA, and COM automation to generate structured business workbooks from configurable reporting pipelines."
