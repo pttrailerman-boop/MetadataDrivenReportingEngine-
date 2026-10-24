@@ -519,9 +519,15 @@ Many operational reports fall between two extremes:
 
 This engine addresses that middle ground. It keeps business-specific SQL and data preparation in Access while moving workbook layout, grouping, formulas, and formatting into reusable metadata and VBA components. The result is a practical reporting system that can be adapted without rewriting the entire Excel-generation pipeline for every report.
 
+## Project History
+
+This reporting architecture was originally developed by Alex Fritts in 2009 to automate recurring Excel reports that required substantially more structure than a conventional data export.
+
+The engine evolved through later business-reporting applications and was eventually documented as a public reference implementation in 2026. The public repository preserves the architecture, source exports, demonstration databases, worked examples, and metadata conventions used to transform SQL-prepared data into structured Excel workbooks with variable-length report bands, formulas, totals, worksheet headers, helper columns, and charts.
+
 ## About the Author
 
-Alex F. is a workflow and reporting automation engineer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
+Alex Fritts is a workflow and reporting automation engineer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
 
 ## Documentation Status
 
