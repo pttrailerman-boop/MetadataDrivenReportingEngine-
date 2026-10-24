@@ -419,8 +419,9 @@ Chart creation occurs after the worksheet sources, repeating report bands, formu
 MetadataDrivenReportingEngine/
 |-- README.md
 |-- Docs/
-|   |-- WhitePaper.md
+|   |-- PracticalQuickStart.md
 |   |-- GettingStarted.md
+|   |-- WhitePaper.md
 |   |-- ReportHeaderReference.md
 |   |-- MetadataConfigurationGuide.md
 |   |-- TblReportSequenceReference.md
