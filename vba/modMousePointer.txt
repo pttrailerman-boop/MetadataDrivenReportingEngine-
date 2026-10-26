@@ -1,4 +1,11 @@
-
+' Metadata-Driven Excel Reporting Engine
+' Copyright (C) 2026 Alex Fritts
+'
+' This program is free software: you can redistribute it and/or
+' modify it under the terms of the GNU General Public License
+' version 3.
+'
+' See the LICENSE file in the repository root.
 
 Function SetMousePointer_TSB(intPointer As Integer) As Boolean
   ' Comments  : sets the mouse pointer
