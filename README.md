@@ -79,6 +79,21 @@ The pipeline:
 
 The current Medicare renderer also includes safer header and footer override handling and forces a complete Excel recalculation before saving the workbook.
 
+### Freeze-Pane Compatibility Note
+
+The public Medicare demonstration ships with the metadata-controlled
+**Freeze Below** option disabled for maximum compatibility across Excel
+installations.
+
+The worksheet header, formulas, formatting, totals, and chart generation
+are unaffected.
+
+Developers who want to test freeze-pane behavior can enable the applicable
+Freeze Below setting in `tblGoodFieldName_Header`. Because Excel freeze
+panes operate against a workbook window, behavior may vary depending on
+Excel version, workbook-window state, and whether the expected worksheet
+is active during rendering.
+
 ### KPI Demo
 
 The KPI demo is an earlier reference implementation retained because it demonstrates broader workbook orchestration:
