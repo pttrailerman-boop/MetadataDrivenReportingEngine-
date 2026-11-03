@@ -555,9 +555,15 @@ You may use, study, modify, and redistribute this project under the terms of the
 
 Alex Fritts is a workflow and reporting automation engineer focused on Microsoft Access, SQL-backed business applications, VBA, COM automation, and metadata-driven Excel reporting.
 
-## Documentation Status
+The repository includes:
 
-The repository includes the architectural white paper, getting-started guide, worksheet-header reference, metadata configuration guide, `tblReportSequence` reference, troubleshooting guide, and worked Medicare and KPI pipelines. Additional screenshots and annotated workbook examples may be added as the demonstrations evolve.
+- An architectural white paper
+- A getting-started guide
+- A worksheet-header reference
+- A metadata configuration guide
+- A `tblReportSequence` reference
+- A troubleshooting guide
+- Worked Medicare and KPI reporting pipelines
 
 ## Contact For technical questions, feedback, or problems with the demonstration, please open a GitHub Issue. For professional inquiries, please contact me through LinkedIn.
-https://www.linkedin.com/in/alex-fritts-813920268/
+[LinkedIn](https://www.linkedin.com/in/alex-fritts-813920268/).
