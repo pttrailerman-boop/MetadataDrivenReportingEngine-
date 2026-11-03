@@ -565,5 +565,4 @@ The repository includes:
 - A troubleshooting guide
 - Worked Medicare and KPI reporting pipelines
 
-## Contact For technical questions, feedback, or problems with the demonstration, please open a GitHub Issue. For professional inquiries, please contact me through LinkedIn.
-[LinkedIn](https://www.linkedin.com/in/alex-fritts-813920268/).
+## Contact For technical questions, feedback, or problems with the demonstration, please open a GitHub Issue. For professional inquiries, please contact me through [LinkedIn](https://www.linkedin.com/in/alex-fritts-813920268/).
